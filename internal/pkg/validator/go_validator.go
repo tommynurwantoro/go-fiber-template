@@ -21,7 +21,7 @@ func NewGoValidator() Validator {
 	uni := ut.New(en, en)
 	trans, _ := uni.GetTranslator("en")
 
-	en_translations.RegisterDefaultTranslations(v, trans)
+	_ = en_translations.RegisterDefaultTranslations(v, trans)
 	RegisterCustomValidator(v, trans)
 	return &GoValidator{validate: v, uni: trans}
 }
@@ -32,21 +32,17 @@ func (v *GoValidator) Validate(ctx context.Context, data interface{}) error {
 		return nil
 	}
 
-	if _, ok := err.(*validator.InvalidValidationError); ok {
+	var invalidErr *validator.InvalidValidationError
+	if errors.As(err, &invalidErr) {
 		return err
 	}
 
-	errs := err.(validator.ValidationErrors)
-	if len(errs) > 0 {
-		mapErr := make(map[string]error, 0)
-		for _, err := range errs {
-			var element ErrorResponse
-			element.Field = err.StructNamespace()
-			element.Tag = err.Tag()
-			element.Value = err.Param()
-			mapErr[err.Field()] = errors.New(err.Translate(v.uni))
+	var validationErrs validator.ValidationErrors
+	if errors.As(err, &validationErrs) && len(validationErrs) > 0 {
+		mapErr := make(map[string]error, len(validationErrs))
+		for _, fe := range validationErrs {
+			mapErr[fe.Field()] = errors.New(fe.Translate(v.uni))
 		}
-
 		return NewErrorMap(mapErr)
 	}
 

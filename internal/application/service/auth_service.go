@@ -162,8 +162,8 @@ func (s *AuthServiceImpl) VerifyEmail(c *fiber.Ctx, req *model.VerifyEmailReques
 		return err
 	}
 
-	if err := s.TokenService.DeleteToken(c, domain.TokenTypeVerifyEmail, user.ID.String()); err != nil {
-		return err
+	if delErr := s.TokenService.DeleteToken(c, domain.TokenTypeVerifyEmail, user.ID.String()); delErr != nil {
+		return delErr
 	}
 
 	return nil

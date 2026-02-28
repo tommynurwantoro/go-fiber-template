@@ -117,7 +117,7 @@ func (s *TokenServiceImpl) GenerateAuthTokens(c *fiber.Ctx, userID string) (*dom
 	return accessTokenDomain, refreshTokenDomain, nil
 }
 
-func (s *TokenServiceImpl) GenerateAccessToken(c *fiber.Ctx, userID string) (*domain.Token, error) {
+func (s *TokenServiceImpl) GenerateAccessToken(_ *fiber.Ctx, userID string) (*domain.Token, error) {
 	accessTokenExpires := time.Now().UTC().Add(s.Conf.JWT.Expire)
 	accessToken, err := s.generateToken(userID, accessTokenExpires, domain.TokenTypeAccess)
 	if err != nil {
@@ -135,7 +135,9 @@ func (s *TokenServiceImpl) GenerateAccessToken(c *fiber.Ctx, userID string) (*do
 	return accessTokenDomain, nil
 }
 
-func (s *TokenServiceImpl) GenerateResetPasswordToken(c *fiber.Ctx, req *model.ForgotPasswordRequest) (*domain.Token, error) {
+func (s *TokenServiceImpl) GenerateResetPasswordToken(
+	c *fiber.Ctx, req *model.ForgotPasswordRequest,
+) (*domain.Token, error) {
 	if err := s.Validator.Validate(c.Context(), req); err != nil {
 		golog.Error("Error validating reset password request", err)
 		return nil, myerrors.ErrInvalidRequest
@@ -157,7 +159,9 @@ func (s *TokenServiceImpl) GenerateResetPasswordToken(c *fiber.Ctx, req *model.F
 		return nil, myerrors.ErrGenerateTokenFailed
 	}
 
-	resetPasswordTokenDomain, err := s.saveToken(c, resetPasswordToken, user.ID.String(), domain.TokenTypeResetPassword, expires)
+	resetPasswordTokenDomain, err := s.saveToken(
+		c, resetPasswordToken, user.ID.String(), domain.TokenTypeResetPassword, expires,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -193,7 +197,9 @@ func (s *TokenServiceImpl) generateToken(userID string, expires time.Time, token
 	return token.SignedString([]byte(s.Conf.JWT.Secret))
 }
 
-func (s *TokenServiceImpl) saveToken(c *fiber.Ctx, token, userID string, tokenType domain.TokenType, expires time.Time) (*domain.Token, error) {
+func (s *TokenServiceImpl) saveToken(
+	c *fiber.Ctx, token, userID string, tokenType domain.TokenType, expires time.Time,
+) (*domain.Token, error) {
 	if err := s.DeleteToken(c, tokenType, userID); err != nil {
 		golog.Error("Error deleting token", err)
 		return nil, myerrors.ErrDeleteTokenFailed

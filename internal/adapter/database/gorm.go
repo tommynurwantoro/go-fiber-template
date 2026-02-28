@@ -65,9 +65,9 @@ func (g *Gorm) Shutdown() error {
 		return err
 	}
 
-	if err := sqlDB.Close(); err != nil {
-		golog.Error("Failed to close database connection: %+v", err)
-		return err
+	if closeErr := sqlDB.Close(); closeErr != nil {
+		golog.Error("Failed to close database connection: %+v", closeErr)
+		return closeErr
 	}
 
 	return nil

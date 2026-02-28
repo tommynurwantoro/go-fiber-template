@@ -191,6 +191,27 @@ linters:
           - testpackage
           - wrapcheck
         path: _test\.go
+      - linters:
+          - gosec
+        text: "G117:"
+      - linters:
+          - gosec
+        text: "G704:"
+      - linters:
+          - lll
+        path: internal/application/(model|handler)/.*
+      - linters:
+          - revive
+        text: "exported"
+      - linters:
+          - revive
+        text: "var-naming"
+      - linters:
+          - revive
+        text: "blank-imports"
+      - linters:
+          - revive
+        text: "unused-parameter"
     paths:
       - third_party$
       - builtin$

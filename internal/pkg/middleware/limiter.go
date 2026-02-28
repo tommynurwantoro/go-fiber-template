@@ -14,8 +14,13 @@ func LimiterConfig() fiber.Handler {
 		Max:        20,
 		Expiration: 15 * time.Minute,
 		LimitReached: func(c *fiber.Ctx) error {
-			return c.Status(fiber.StatusTooManyRequests).
-				JSON(formatter.NewErrorResponse(formatter.TooManyRequest, "Too many requests, please try again later", c.Get("traceId")))
+			return c.Status(fiber.StatusTooManyRequests).JSON(
+				formatter.NewErrorResponse(
+					formatter.TooManyRequest,
+					"Too many requests, please try again later",
+					c.Get("traceId"),
+				),
+			)
 		},
 		SkipSuccessfulRequests: true,
 	})

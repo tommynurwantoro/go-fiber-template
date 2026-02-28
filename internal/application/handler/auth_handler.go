@@ -202,8 +202,8 @@ func (a *AuthHandlerImpl) ForgotPassword(c *fiber.Ctx) error {
 		return err
 	}
 
-	if err := a.EmailAdapter.SendResetPasswordEmail(req.Email, resetPasswordToken.Token); err != nil {
-		return err
+	if sendErr := a.EmailAdapter.SendResetPasswordEmail(req.Email, resetPasswordToken.Token); sendErr != nil {
+		return sendErr
 	}
 
 	return c.Status(fiber.StatusOK).
@@ -247,15 +247,19 @@ func (a *AuthHandlerImpl) ResetPassword(c *fiber.Ctx) error {
 // @Success      200  {object}  model.SuccessMessageAPIResponse
 // @Failure      401  {object}  model.ErrorUnauthorized  "Invalid or missing access token"
 func (a *AuthHandlerImpl) SendVerificationEmail(c *fiber.Ctx) error {
-	userID := c.Locals("user").(*domain.User).ID.String()
+	user, ok := c.Locals("user").(*domain.User)
+	if !ok {
+		return fiber.NewError(fiber.StatusUnauthorized, "Invalid user context")
+	}
+	userID := user.ID.String()
 
 	verifyEmailToken, err := a.TokenService.GenerateVerifyEmailToken(c, userID)
 	if err != nil {
 		return err
 	}
 
-	if err := a.EmailAdapter.SendVerificationEmail(userID, verifyEmailToken.Token); err != nil {
-		return err
+	if sendErr := a.EmailAdapter.SendVerificationEmail(userID, verifyEmailToken.Token); sendErr != nil {
+		return sendErr
 	}
 
 	return c.Status(fiber.StatusOK).

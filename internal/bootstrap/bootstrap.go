@@ -5,6 +5,7 @@ import (
 	"app/internal/adapter/rest"
 	"app/internal/pkg/validator"
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"os/signal"
@@ -33,7 +34,11 @@ func RunService(conf *config.Config) {
 	}
 
 	// Start server
-	fiberApp := appContainer.GetServiceOrNil("rest").(*rest.Fiber)
+	fiberSvc := appContainer.GetServiceOrNil("rest")
+	fiberApp, ok := fiberSvc.(*rest.Fiber)
+	if !ok {
+		golog.Panic("Failed to get rest service from container", errors.New("rest service not found"))
+	}
 
 	serverErrors := make(chan error, 1)
 	go func() {

@@ -1,9 +1,9 @@
 package router
 
 import (
-	// initialize the Swagger documentation
 	"app/config"
-	_ "app/docs"
+
+	_ "app/docs" // swagger init
 	"app/internal/adapter/rest"
 	"app/internal/application/handler"
 	"app/internal/pkg/middleware"

@@ -11,15 +11,15 @@ type ErrorResponse struct {
 	Value string `json:"value,omitempty"`
 }
 
-type ErrorMap struct {
+type MapValidationError struct {
 	Errors map[string]error
 }
 
 func NewErrorMap(errs map[string]error) error {
-	return &ErrorMap{Errors: errs}
+	return &MapValidationError{Errors: errs}
 }
 
-func (e ErrorMap) Error() string {
+func (e MapValidationError) Error() string {
 	errorMessage := make([]string, 0)
 
 	for key, er := range e.Errors {

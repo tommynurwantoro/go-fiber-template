@@ -12,8 +12,8 @@ const (
 )
 
 func RegisterCustomValidator(validate *validator.Validate, trans ut.Translator) {
-	validate.RegisterValidation(StrongPassword, validateStrongPassword)
-	validate.RegisterTranslation(StrongPassword, trans, validateStrongPasswordMessage, validateStrongPasswordField)
+	_ = validate.RegisterValidation(StrongPassword, validateStrongPassword)
+	_ = validate.RegisterTranslation(StrongPassword, trans, validateStrongPasswordMessage, validateStrongPasswordField)
 }
 
 func validateStrongPassword(fl validator.FieldLevel) bool {

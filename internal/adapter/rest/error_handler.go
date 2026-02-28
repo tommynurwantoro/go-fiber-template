@@ -15,16 +15,15 @@ func ErrorHandler(codeMap map[error]formatter.Status, statusMap map[error]int) f
 		message := err.Error()
 		errList := make(map[string]any, 0)
 
-		// Status code defaults to 500
-		httpStatus := fiber.StatusInternalServerError
-
-		// if error is a validator.ErrorMap
-		if _err, ok := err.(*validator.ErrorMap); ok {
-			message, errList = makeErrorMap(_err.Error())
+		// if error is a validator.MapValidationError
+		var validationErr *validator.MapValidationError
+		if errors.As(err, &validationErr) {
+			message, errList = makeErrorMap(validationErr.Error())
 			err = fiber.ErrBadRequest
 		}
 
 		// Retrieve the custom status code if it's a *fiber.Error
+		var httpStatus int
 		var e *fiber.Error
 		if errors.As(err, &e) {
 			httpStatus = e.Code
@@ -68,7 +67,8 @@ func makeErrorMap(er string) (string, map[string]any) {
 }
 
 func getcode(err error, codeMap map[error]formatter.Status) formatter.Status {
-	if _, ok := err.(*validator.ErrorMap); ok {
+	var validationErr *validator.MapValidationError
+	if errors.As(err, &validationErr) {
 		return formatter.InvalidRequest
 	}
 	for key, val := range codeMap {
@@ -81,10 +81,12 @@ func getcode(err error, codeMap map[error]formatter.Status) formatter.Status {
 }
 
 func gethttpstatus(err error, statusMap map[error]int) int {
-	if _, ok := err.(*validator.ErrorMap); ok {
+	var validationErr *validator.MapValidationError
+	if errors.As(err, &validationErr) {
 		return fiber.StatusBadRequest
 	}
-	if errFiber, ok := err.(*fiber.Error); ok {
+	var errFiber *fiber.Error
+	if errors.As(err, &errFiber) {
 		return errFiber.Code
 	}
 	for key, val := range statusMap {

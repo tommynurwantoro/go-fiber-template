@@ -26,12 +26,15 @@ type AuthImpl struct {
 func (a *AuthImpl) JWTAuth(requiredRights ...string) fiber.Handler {
 	return jwtware.New(jwtware.Config{
 		SigningKey: jwtware.SigningKey{Key: []byte(a.Conf.JWT.Secret)},
-		ErrorHandler: func(c *fiber.Ctx, err error) error {
+		ErrorHandler: func(_ *fiber.Ctx, err error) error {
 			golog.Error("Error verifying token", err)
 			return myerrors.ErrInvalidToken
 		},
 		SuccessHandler: func(c *fiber.Ctx) error {
-			user := c.Locals("user").(*jwt.Token)
+			user, ok := c.Locals("user").(*jwt.Token)
+			if !ok {
+				return myerrors.ErrInvalidToken
+			}
 			userID, err := token.VerifyToken(user.Raw, a.Conf.JWT.Secret, domain.TokenTypeAccess.String())
 			if err != nil {
 				return myerrors.ErrInvalidToken

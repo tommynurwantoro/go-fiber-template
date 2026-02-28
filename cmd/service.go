@@ -14,9 +14,9 @@ func RunService() *cobra.Command {
 		Use:     "service",
 		Aliases: []string{"svc"},
 		Short:   "Run the service",
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(_ *cobra.Command, _ []string) {
 			// Load env variables from .env file
-			godotenv.Load(".env")
+			_ = godotenv.Load(".env")
 
 			// Load configurations
 			conf := config.Config{}

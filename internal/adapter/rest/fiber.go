@@ -31,14 +31,14 @@ func (f *Fiber) Startup() error {
 	})
 
 	// Middleware setup
-	f.App.Use(requestid.New(requestid.Config{
+	f.Use(requestid.New(requestid.Config{
 		ContextKey: "traceId",
 	}))
-	f.App.Use("/v1/auth", middleware.LimiterConfig())
-	f.App.Use(helmet.New())
-	f.App.Use(compress.New())
-	f.App.Use(cors.New())
-	f.App.Use(middleware.RecoverConfig())
+	f.Use("/v1/auth", middleware.LimiterConfig())
+	f.Use(helmet.New())
+	f.Use(compress.New())
+	f.Use(cors.New())
+	f.Use(middleware.RecoverConfig())
 
 	return nil
 }
