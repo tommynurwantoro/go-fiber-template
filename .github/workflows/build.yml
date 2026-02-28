@@ -1,0 +1,74 @@
+name: Build
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+env:
+  APP_ENV: dev
+  APP_HOST: 0.0.0.0
+  APP_PORT: 8888
+  DB_HOST: localhost
+  DB_USER: postgres
+  DB_PASSWORD: thisisasamplepassword
+  DB_NAME: fiberdb
+  DB_PORT: 5432
+
+jobs:
+  GoFiber:
+    runs-on: ubuntu-latest
+
+    services:
+      postgresdb:
+        image: postgres:alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: thisisasamplepassword
+          POSTGRES_DB: fiberdb
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 20s
+          --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.26"
+
+      - name: Wait for PostgreSQL to be ready
+        run: |
+          until pg_isready -h localhost -U postgres -d fiberdb; do
+            echo "Waiting for PostgreSQL..."
+            sleep 5
+          done
+
+      - name: Install dependencies
+        run: go mod tidy
+
+      - name: Build Go application
+        run: CGO_ENABLED=0 GOOS=linux go build src/main.go
+        env:
+          APP_NAME: ${{ env.APP_NAME }}
+          APP_VERSION: ${{ env.APP_VERSION }}
+          ENVIRONMENT: ${{ env.ENVIRONMENT }}
+          DATABASE_HOST: ${{ env.DATABASE_HOST }}
+          DATABASE_NAME: ${{ env.DATABASE_NAME }}
+          DATABASE_USER: ${{ env.DATABASE_USER }}
+          DATABASE_PASSWORD: ${{ env.DATABASE_PASSWORD }}
+          JWT_SECRET: ${{ env.JWT_SECRET }}
+          SMTP_HOST: ${{ env.SMTP_HOST }}
+          SMTP_PORT: ${{ env.SMTP_PORT }}
+          SMTP_USERNAME: ${{ env.SMTP_USERNAME }}
+          SMTP_PASSWORD: ${{ env.SMTP_PASSWORD }}
+          SMTP_FROM: ${{ env.SMTP_FROM }}
+          OAUTH2_GOOGLE_CLIENT_ID: ${{ env.OAUTH2_GOOGLE_CLIENT_ID }}
+          OAUTH2_GOOGLE_CLIENT_SECRET: ${{ env.OAUTH2_GOOGLE_CLIENT_SECRET }}
+          OAUTH2_REDIRECT_URL: ${{ env.OAUTH2_REDIRECT_URL }}

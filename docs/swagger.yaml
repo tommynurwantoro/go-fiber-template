@@ -1,0 +1,990 @@
+basePath: /
+definitions:
+  formatter.Metadata:
+    properties:
+      limit:
+        example: 10
+        type: integer
+      page:
+        example: 1
+        type: integer
+      total_pages:
+        example: 1
+        type: integer
+      total_results:
+        example: 1
+        type: integer
+    type: object
+  formatter.SuccessResponse:
+    properties:
+      data: {}
+      message:
+        example: Operation completed successfully
+        type: string
+      metadata:
+        $ref: '#/definitions/formatter.Metadata'
+      status:
+        example: success
+        type: string
+    type: object
+  model.CreateUserRequest:
+    properties:
+      email:
+        example: fake@example.com
+        maxLength: 50
+        type: string
+      name:
+        example: fake name
+        maxLength: 50
+        type: string
+      password:
+        example: password1
+        maxLength: 20
+        minLength: 8
+        type: string
+      role:
+        enum:
+        - user
+        - admin
+        example: user
+        maxLength: 50
+        type: string
+    required:
+    - email
+    - name
+    - password
+    - role
+    type: object
+  model.CreateUserResponse:
+    properties:
+      email:
+        example: fake@example.com
+        type: string
+      id:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+      is_email_verified:
+        example: false
+        type: boolean
+      name:
+        example: fake name
+        type: string
+      role:
+        example: user
+        type: string
+    type: object
+  model.ErrorDuplicateEmail:
+    properties:
+      message:
+        example: Email already taken
+        type: string
+      status:
+        example: error
+        type: string
+      traceId:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+    type: object
+  model.ErrorFailedLogin:
+    properties:
+      message:
+        example: Invalid email or password
+        type: string
+      status:
+        example: error
+        type: string
+      traceId:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+    type: object
+  model.ErrorFailedResetPassword:
+    properties:
+      message:
+        example: Password reset failed
+        type: string
+      status:
+        example: error
+        type: string
+      traceId:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+    type: object
+  model.ErrorFailedVerifyEmail:
+    properties:
+      message:
+        example: Verify email failed
+        type: string
+      status:
+        example: error
+        type: string
+      traceId:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+    type: object
+  model.ErrorForbidden:
+    properties:
+      message:
+        example: You don't have permission to access this resource
+        type: string
+      status:
+        example: error
+        type: string
+      traceId:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+    type: object
+  model.ErrorInvalidRequest:
+    properties:
+      message:
+        example: Invalid request body or validation failed
+        type: string
+      status:
+        example: error
+        type: string
+      traceId:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+    type: object
+  model.ErrorNotFound:
+    properties:
+      message:
+        example: Not found
+        type: string
+      status:
+        example: error
+        type: string
+      traceId:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+    type: object
+  model.ErrorUnauthorized:
+    properties:
+      message:
+        example: Please authenticate
+        type: string
+      status:
+        example: error
+        type: string
+      traceId:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+    type: object
+  model.ForgotPasswordRequest:
+    properties:
+      email:
+        example: fake@example.com
+        maxLength: 50
+        type: string
+      password:
+        example: password1
+        maxLength: 20
+        minLength: 8
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  model.GetUserResponse:
+    properties:
+      email:
+        example: fake@example.com
+        type: string
+      id:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+      is_email_verified:
+        example: false
+        type: boolean
+      name:
+        example: fake name
+        type: string
+      role:
+        example: user
+        type: string
+    type: object
+  model.HealthCheck:
+    properties:
+      is_up:
+        example: true
+        type: boolean
+      message:
+        example: Postgre is up and running
+        type: string
+      name:
+        example: Postgre
+        type: string
+      status:
+        example: success
+        type: string
+    type: object
+  model.HealthCheckAPIResponseError:
+    properties:
+      code:
+        example: 500
+        type: integer
+      is_healthy:
+        example: false
+        type: boolean
+      message:
+        example: Health check completed
+        type: string
+      result:
+        items:
+          $ref: '#/definitions/model.HealthCheck'
+        type: array
+      status:
+        example: error
+        type: string
+    type: object
+  model.HealthCheckResponse:
+    properties:
+      code:
+        example: 200
+        type: integer
+      is_healthy:
+        example: true
+        type: boolean
+      message:
+        example: All services healthy
+        type: string
+      result:
+        items:
+          $ref: '#/definitions/model.HealthCheck'
+        type: array
+      status:
+        example: success
+        type: string
+    type: object
+  model.LoginRequest:
+    properties:
+      email:
+        example: fake@example.com
+        maxLength: 50
+        type: string
+      password:
+        example: password1
+        maxLength: 20
+        minLength: 8
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  model.LoginResponse:
+    properties:
+      access_token:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1ZWJhYzUzNDk1NGI1NDEzOTgwNmMxMTIiLCJpYXQiOjE1ODkyOTg0ODQsImV4cCI6MTU4OTMwMDI4NH0.m1U63blB0MLej_WfB7yC2FTMnCziif9X8yzwDEfJXAg
+        type: string
+      access_token_expires_at:
+        example: "2024-10-07T11:56:46.618180553Z"
+        type: string
+      refresh_token:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1ZWJhYzUzNDk1NGI1NDEzOTgwNmMxMTIiLCJpYXQiOjE1ODkyOTg0ODQsImV4cCI6MTU4OTMwMDI4NH0.m1U63blB0MLej_WfB7yC2FTMnCziif9X8yzwDEfJXAg
+        type: string
+      refresh_token_expires_at:
+        example: "2024-10-07T11:56:46.618180553Z"
+        type: string
+    type: object
+  model.LogoutRequest:
+    properties:
+      refresh_token:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1ZWJhYzUzNDk1NGI1NDEzOTgwNmMxMTIiLCJpYXQiOjE1ODkyOTg0ODQsImV4cCI6MTU4OTMwMDI4NH0.m1U63blB0MLej_WfB7yC2FTMnCziif9X8yzwDEfJXAg
+        maxLength: 255
+        type: string
+    required:
+    - refresh_token
+    type: object
+  model.RefreshTokenRequest:
+    properties:
+      refresh_token:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1ZWJhYzUzNDk1NGI1NDEzOTgwNmMxMTIiLCJpYXQiOjE1ODkyOTg0ODQsImV4cCI6MTU4OTMwMDI4NH0.m1U63blB0MLej_WfB7yC2FTMnCziif9X8yzwDEfJXAg
+        maxLength: 255
+        type: string
+    required:
+    - refresh_token
+    type: object
+  model.RefreshTokenResponse:
+    properties:
+      access_token:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1ZWJhYzUzNDk1NGI1NDEzOTgwNmMxMTIiLCJpYXQiOjE1ODkyOTg0ODQsImV4cCI6MTU4OTMwMDI4NH0.m1U63blB0MLej_WfB7yC2FTMnCziif9X8yzwDEfJXAg
+        type: string
+      expires_at:
+        example: "2024-10-07T11:56:46.618180553Z"
+        type: string
+    type: object
+  model.RegisterRequest:
+    properties:
+      email:
+        example: fake@example.com
+        maxLength: 50
+        type: string
+      name:
+        example: fake name
+        maxLength: 50
+        type: string
+      password:
+        example: password1
+        maxLength: 20
+        minLength: 8
+        type: string
+    required:
+    - email
+    - name
+    - password
+    type: object
+  model.RegisterResponse:
+    properties:
+      access_token:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1ZWJhYzUzNDk1NGI1NDEzOTgwNmMxMTIiLCJpYXQiOjE1ODkyOTg0ODQsImV4cCI6MTU4OTMwMDI4NH0.m1U63blB0MLej_WfB7yC2FTMnCziif9X8yzwDEfJXAg
+        type: string
+      access_token_expires_at:
+        example: "2024-10-07T11:56:46.618180553Z"
+        type: string
+      email:
+        example: fake@example.com
+        type: string
+      id:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+      name:
+        example: fake name
+        type: string
+      refresh_token:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1ZWJhYzUzNDk1NGI1NDEzOTgwNmMxMTIiLCJpYXQiOjE1ODkyOTg0ODQsImV4cCI6MTU4OTMwMDI4NH0.m1U63blB0MLej_WfB7yC2FTMnCziif9X8yzwDEfJXAg
+        type: string
+      refresh_token_expires_at:
+        example: "2024-10-07T11:56:46.618180553Z"
+        type: string
+    type: object
+  model.ResetPasswordRequest:
+    properties:
+      password:
+        example: password1
+        maxLength: 20
+        minLength: 8
+        type: string
+      token:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1ZWJhYzUzNDk1NGI1NDEzOTgwNmMxMTIiLCJpYXQiOjE1ODkyOTg0ODQsImV4cCI6MTU4OTMwMDI4NH0.m1U63blB0MLej_WfB7yC2FTMnCziif9X8yzwDEfJXAg
+        maxLength: 255
+        type: string
+    required:
+    - password
+    - token
+    type: object
+  model.SuccessMessageAPIResponse:
+    properties:
+      message:
+        example: Operation completed successfully
+        type: string
+      status:
+        example: success
+        type: string
+    type: object
+  model.UpdateUserRequest:
+    properties:
+      email:
+        example: fake@example.com
+        maxLength: 50
+        type: string
+      name:
+        example: fake name
+        maxLength: 50
+        type: string
+      password:
+        example: password1
+        maxLength: 20
+        minLength: 8
+        type: string
+      user_id:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+    required:
+    - user_id
+    type: object
+  model.UpdateUserResponse:
+    properties:
+      email:
+        example: fake@example.com
+        type: string
+      id:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+      is_email_verified:
+        example: false
+        type: boolean
+      name:
+        example: fake name
+        type: string
+      role:
+        example: user
+        type: string
+    type: object
+  model.VerifyEmailRequest:
+    properties:
+      token:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1ZWJhYzUzNDk1NGI1NDEzOTgwNmMxMTIiLCJpYXQiOjE1ODkyOTg0ODQsImV4cCI6MTU4OTMwMDI4NH0.m1U63blB0MLej_WfB7yC2FTMnCziif9X8yzwDEfJXAg
+        maxLength: 255
+        type: string
+    required:
+    - token
+    type: object
+host: localhost:8888
+info:
+  contact: {}
+  license:
+    name: MIT
+    url: https://github.com/tommynurwantoro/go-fiber-template/blob/main/LICENSE
+  title: go-fiber-template API documentation
+  version: 1.0.0
+paths:
+  /auth/forgot-password:
+    post:
+      consumes:
+      - application/json
+      description: Send a reset password email. Requires email and current password
+        for verification.
+      parameters:
+      - description: Request body (email, password for verification)
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.ForgotPasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.SuccessMessageAPIResponse'
+        "400":
+          description: Invalid request body or validation failed
+          schema:
+            $ref: '#/definitions/model.ErrorInvalidRequest'
+        "401":
+          description: Invalid email or password
+          schema:
+            $ref: '#/definitions/model.ErrorFailedLogin'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/model.ErrorNotFound'
+      summary: Forgot password
+      tags:
+      - Auth
+  /auth/google:
+    get:
+      description: Initiates the Google OAuth2 login flow. Redirects to Google consent
+        page. Use in browser.
+      produces:
+      - application/json
+      responses:
+        "303":
+          description: Redirects to Google OAuth consent page
+      summary: Login with google
+      tags:
+      - Auth
+  /auth/google-callback:
+    get:
+      description: OAuth2 callback. Exchanges code for tokens and creates/updates
+        user. Returns auth tokens.
+      parameters:
+      - description: Authorization code from Google
+        in: query
+        name: code
+        required: true
+        type: string
+      - description: State parameter for CSRF protection
+        in: query
+        name: state
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.LoginResponse'
+        "401":
+          description: Invalid state or authorization code
+          schema:
+            $ref: '#/definitions/model.ErrorUnauthorized'
+      summary: Google OAuth2 callback
+      tags:
+      - Auth
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate with email and password. Returns access and refresh
+        tokens on success.
+      parameters:
+      - description: Request body (email, password with strong-password validation)
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.LoginResponse'
+        "400":
+          description: Invalid request body or validation failed
+          schema:
+            $ref: '#/definitions/model.ErrorInvalidRequest'
+        "401":
+          description: Invalid email or password
+          schema:
+            $ref: '#/definitions/model.ErrorFailedLogin'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/model.ErrorNotFound'
+      summary: Login
+      tags:
+      - Auth
+  /auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: Invalidate the refresh token. Requires valid refresh token in request
+        body.
+      parameters:
+      - description: Request body (refresh_token)
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.LogoutRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.SuccessMessageAPIResponse'
+        "400":
+          description: Invalid request body or validation failed
+          schema:
+            $ref: '#/definitions/model.ErrorInvalidRequest'
+        "401":
+          description: Invalid or expired refresh token
+          schema:
+            $ref: '#/definitions/model.ErrorUnauthorized'
+        "404":
+          description: Token not found
+          schema:
+            $ref: '#/definitions/model.ErrorNotFound'
+      summary: Logout
+      tags:
+      - Auth
+  /auth/refresh-tokens:
+    post:
+      consumes:
+      - application/json
+      description: Exchange a valid refresh token for a new access token.
+      parameters:
+      - description: Request body (refresh_token)
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.RefreshTokenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.RefreshTokenResponse'
+        "400":
+          description: Invalid request body or validation failed
+          schema:
+            $ref: '#/definitions/model.ErrorInvalidRequest'
+        "401":
+          description: Invalid or expired refresh token
+          schema:
+            $ref: '#/definitions/model.ErrorUnauthorized'
+        "404":
+          description: Token not found
+          schema:
+            $ref: '#/definitions/model.ErrorNotFound'
+      summary: Refresh auth tokens
+      tags:
+      - Auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Create a new user account. Returns user data and auth tokens on
+        success.
+      parameters:
+      - description: Request body (name, email, password with strong-password validation)
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.RegisterResponse'
+        "400":
+          description: Invalid request body or validation failed
+          schema:
+            $ref: '#/definitions/model.ErrorInvalidRequest'
+        "409":
+          description: Email already taken
+          schema:
+            $ref: '#/definitions/model.ErrorDuplicateEmail'
+      summary: Register as user
+      tags:
+      - Auth
+  /auth/reset-password:
+    post:
+      consumes:
+      - application/json
+      description: Reset password using the token from the forgot-password email.
+      parameters:
+      - description: Request body (token from email, new password)
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.ResetPasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.SuccessMessageAPIResponse'
+        "400":
+          description: Invalid request body or validation failed
+          schema:
+            $ref: '#/definitions/model.ErrorInvalidRequest'
+        "401":
+          description: Invalid or expired reset token
+          schema:
+            $ref: '#/definitions/model.ErrorFailedResetPassword'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/model.ErrorNotFound'
+      summary: Reset password
+      tags:
+      - Auth
+  /auth/send-verification-email:
+    post:
+      consumes:
+      - application/json
+      description: Send a verification email to the authenticated user. Requires Bearer
+        token.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.SuccessMessageAPIResponse'
+        "401":
+          description: Invalid or missing access token
+          schema:
+            $ref: '#/definitions/model.ErrorUnauthorized'
+      security:
+      - BearerAuth: []
+      summary: Send verification email
+      tags:
+      - Auth
+  /auth/verify-email:
+    post:
+      consumes:
+      - application/json
+      description: Verify email address using the token from the verification email.
+      parameters:
+      - description: Request body (token from verification email)
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.VerifyEmailRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.SuccessMessageAPIResponse'
+        "400":
+          description: Invalid request body or validation failed
+          schema:
+            $ref: '#/definitions/model.ErrorInvalidRequest'
+        "401":
+          description: Invalid or expired verification token
+          schema:
+            $ref: '#/definitions/model.ErrorFailedVerifyEmail'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/model.ErrorNotFound'
+      summary: Verify email
+      tags:
+      - Auth
+  /health-check:
+    get:
+      consumes:
+      - application/json
+      description: Check the status of services (PostgreSQL, Memory). Returns 200
+        when all healthy, 500 when any service is down.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: All services healthy
+          schema:
+            $ref: '#/definitions/model.HealthCheckResponse'
+        "500":
+          description: One or more services unhealthy
+          schema:
+            $ref: '#/definitions/model.HealthCheckAPIResponseError'
+      summary: Health check
+      tags:
+      - Health
+  /v1/users:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve paginated list of users. Only admins (getUsers permission)
+        can access. Supports search by name, email, or role.
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      - description: Search by name, email, or role
+        in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/formatter.SuccessResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.GetUserResponse'
+                  type: array
+                metadata:
+                  $ref: '#/definitions/formatter.Metadata'
+              type: object
+        "400":
+          description: Invalid query parameters
+          schema:
+            $ref: '#/definitions/model.ErrorInvalidRequest'
+        "401":
+          description: Invalid or missing access token
+          schema:
+            $ref: '#/definitions/model.ErrorUnauthorized'
+        "403":
+          description: Insufficient permissions
+          schema:
+            $ref: '#/definitions/model.ErrorForbidden'
+      security:
+      - BearerAuth: []
+      summary: Get all users
+      tags:
+      - Users
+    post:
+      consumes:
+      - application/json
+      description: Create a new user. Only admins (manageUsers permission) can create
+        users.
+      parameters:
+      - description: 'Request body (name, email, password, role: user|admin)'
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.CreateUserResponse'
+        "400":
+          description: Invalid request body or validation failed
+          schema:
+            $ref: '#/definitions/model.ErrorInvalidRequest'
+        "401":
+          description: Invalid or missing access token
+          schema:
+            $ref: '#/definitions/model.ErrorUnauthorized'
+        "403":
+          description: Insufficient permissions
+          schema:
+            $ref: '#/definitions/model.ErrorForbidden'
+        "409":
+          description: Email already in use
+          schema:
+            $ref: '#/definitions/model.ErrorDuplicateEmail'
+      security:
+      - BearerAuth: []
+      summary: Create a user
+      tags:
+      - Users
+  /v1/users/{userId}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete user by ID. Users can delete only themselves; admins (manageUsers)
+        can delete any user. All tokens are revoked.
+      parameters:
+      - description: User UUID
+        in: path
+        name: userId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.SuccessMessageAPIResponse'
+        "400":
+          description: Invalid user ID format
+          schema:
+            $ref: '#/definitions/model.ErrorInvalidRequest'
+        "401":
+          description: Invalid or missing access token
+          schema:
+            $ref: '#/definitions/model.ErrorUnauthorized'
+        "403":
+          description: Insufficient permissions
+          schema:
+            $ref: '#/definitions/model.ErrorForbidden'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/model.ErrorNotFound'
+      security:
+      - BearerAuth: []
+      summary: Delete a user
+      tags:
+      - Users
+    get:
+      consumes:
+      - application/json
+      description: Fetch user by ID. Users can fetch only their own data; admins (getUsers)
+        can fetch any user.
+      parameters:
+      - description: User UUID
+        in: path
+        name: userId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.GetUserResponse'
+        "400":
+          description: Invalid user ID format
+          schema:
+            $ref: '#/definitions/model.ErrorInvalidRequest'
+        "401":
+          description: Invalid or missing access token
+          schema:
+            $ref: '#/definitions/model.ErrorUnauthorized'
+        "403":
+          description: Insufficient permissions
+          schema:
+            $ref: '#/definitions/model.ErrorForbidden'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/model.ErrorNotFound'
+      security:
+      - BearerAuth: []
+      summary: Get a user
+      tags:
+      - Users
+    patch:
+      consumes:
+      - application/json
+      description: Update user by ID. Users can update only their own data; admins
+        (manageUsers) can update any user. Provide at least one of name, email, or
+        password.
+      parameters:
+      - description: User UUID
+        in: path
+        name: userId
+        required: true
+        type: string
+      - description: Request body (name, email, password - all optional)
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.UpdateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.UpdateUserResponse'
+        "400":
+          description: Invalid user ID or request body
+          schema:
+            $ref: '#/definitions/model.ErrorInvalidRequest'
+        "401":
+          description: Invalid or missing access token
+          schema:
+            $ref: '#/definitions/model.ErrorUnauthorized'
+        "403":
+          description: Insufficient permissions
+          schema:
+            $ref: '#/definitions/model.ErrorForbidden'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/model.ErrorNotFound'
+        "409":
+          description: Email already in use
+          schema:
+            $ref: '#/definitions/model.ErrorDuplicateEmail'
+      security:
+      - BearerAuth: []
+      summary: Update a user
+      tags:
+      - Users
+securityDefinitions:
+  BearerAuth:
+    description: 'Example Value: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

@@ -1,0 +1,40 @@
+app_name: ""
+app_version: ""
+environment: ""
+http:
+  host: "0.0.0.0"
+  port: 8888
+  write_timeout: 30s
+  read_timeout: 30s
+log:
+  file_location: "logs"
+  file_max_size: 50
+  file_max_backup: 10
+  file_max_age: 7
+  stdout: true
+database:
+  host: ""
+  port: 5432
+  name: ""
+  user: ""
+  password: ""
+  ssl_mode: "disable"
+  max_idle_conn: 10
+  conn_max_lifetime: 10m
+  max_open_conn: 100
+jwt:
+  secret: ""
+  expire: 30m
+  refresh_expire: 7
+  reset_password_expire: 10m
+  verify_email_expire: 10m
+smtp:
+  host: ""
+  port: 587
+  username: ""
+  password: ""
+  from: ""
+oauth2:
+  google_client_id: ""
+  google_client_secret: ""
+  redirect_url: ""

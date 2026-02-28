@@ -1,0 +1,13 @@
+# Environment varibales
+.env*
+!.env*.example
+
+# Temporary
+tmp/
+
+lint.txt
+main
+bin/golangci-lint
+
+logs/
+mocks/
