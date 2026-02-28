@@ -7,14 +7,22 @@ on:
     branches: ["main"]
 
 env:
-  APP_ENV: dev
-  APP_HOST: 0.0.0.0
-  APP_PORT: 8888
-  DB_HOST: localhost
-  DB_USER: postgres
-  DB_PASSWORD: thisisasamplepassword
-  DB_NAME: fiberdb
-  DB_PORT: 5432
+  APP_NAME: go-fiber-template
+  APP_VERSION: v1.0.0
+  ENVIRONMENT: development
+  DATABASE_HOST: localhost
+  DATABASE_NAME: fiberdb
+  DATABASE_USER: postgres
+  DATABASE_PASSWORD: thisisasamplepassword
+  JWT_SECRET: thisisasamplesecret
+  SMTP_HOST: localhost
+  SMTP_PORT: 587
+  SMTP_USERNAME: changemeinproduction
+  SMTP_PASSWORD: changemeinproduction
+  SMTP_FROM: support@yourapp.com
+  OAUTH2_GOOGLE_CLIENT_ID: yourapps.googleusercontent.com
+  OAUTH2_GOOGLE_CLIENT_SECRET: thisisasamplesecret
+  OAUTH2_REDIRECT_URL: http://localhost:8888/v1/auth/google-callback
 
 jobs:
   GoFiber:
