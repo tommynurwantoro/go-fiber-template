@@ -54,7 +54,7 @@ jobs:
         run: go mod tidy
 
       - name: Build Go application
-        run: CGO_ENABLED=0 GOOS=linux go build src/main.go
+        run: CGO_ENABLED=0 GOOS=linux go build ./main.go
         env:
           APP_NAME: ${{ env.APP_NAME }}
           APP_VERSION: ${{ env.APP_VERSION }}
