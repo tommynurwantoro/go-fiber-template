@@ -1,4 +1,4 @@
-# RESTful API Go Fiber Template
+# Go Fiber Template
 
 ![Go Version](https://img.shields.io/badge/Go-1.26+-00ADD8?style=flat&logo=go)
 [![Go Report Card](https://goreportcard.com/badge/github.com/tommynurwantoro/go-fiber-template)](https://goreportcard.com/report/github.com/tommynurwantoro/go-fiber-template)
