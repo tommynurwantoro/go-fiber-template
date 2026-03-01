@@ -273,9 +273,6 @@ REDIRECT_URL=http://localhost:8888/auth/google-callback
 
 To view the list of available APIs and their specifications, run the server and go to `http://localhost:8888/v1/docs` in your browser.
 
-![Auth](https://tommynurwantoro.github.io/assets/images/swagger1.png)
-![User](https://tommynurwantoro.github.io/assets/images/swagger2.png)
-
 This documentation page is automatically generated using the [Swag](https://github.com/swaggo/swag) definitions written as comments in the handler files.
 
 See 👉 [Declarative Comments Format.](https://github.com/swaggo/swag#declarative-comments-format)
