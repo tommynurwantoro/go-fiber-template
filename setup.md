@@ -23,7 +23,7 @@ Compute the following values from the user inputs. Do not ask the user for these
 | Derived Value          | Rule                                                        | Example                  |
 |------------------------|-------------------------------------------------------------|--------------------------|
 | `binary-name`          | Last segment of the module path                             | `my-project`             |
-| `docker-network-name`  | `<binary-name>_network`                                     | `my-project_network`     |
+| `docker-network-name`  | `<binary-name>-network`                                     | `my-project-network`     |
 | `docker-service-name`  | `<binary-name>-app`                                         | `my-project-app`         |
 | `cobra-command-name`   | Same as `binary-name`                                       | `my-project`             |
 
@@ -99,8 +99,10 @@ Use: "<binary-name>",
 Replace `go-fiber-template` with `<binary-name>` in the following targets:
 
 - **build target**: `go build -o ./bin/go-fiber-template` becomes `go build -o ./bin/<binary-name>`
-- **migrate-docker-up target**: `--network go-fiber-template_go-network` becomes `--network <binary-name>_<binary-name>-network`
-- **migrate-docker-down target**: `--network go-fiber-template_go-network` becomes `--network <binary-name>_<binary-name>-network`
+- **migrate-docker-up target**: `--network go-fiber-template_go-network` becomes `--network <binary-name>_<docker-network-name>`
+- **migrate-docker-down target**: `--network go-fiber-template_go-network` becomes `--network <binary-name>_<docker-network-name>`
+
+> Note: Docker Compose prefixes network names with the project name (defaults to the directory name). This assumes the project directory is named `<binary-name>`.
 
 ### h. `docker-compose.yml`
 
@@ -109,7 +111,7 @@ Apply all of the following replacements:
 - Rename service `go-app` to `<docker-service-name>` (the service key under `services:`)
 - Update `image: go-app` to `image: <docker-service-name>`
 - Update volume mount path `.:/usr/src/go-app` to `.:/usr/src/<docker-service-name>`
-- Rename network `go-network` to `<binary-name>-network` (in the `networks:` definition and all `networks:` references throughout the file)
+- Rename network `go-network` to `<docker-network-name>` (in the `networks:` definition and all `networks:` references throughout the file)
 
 ### i. `Dockerfile`
 
