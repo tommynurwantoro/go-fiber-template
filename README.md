@@ -13,6 +13,23 @@ A template/starter project for quickly building RESTful APIs using Go, Fiber, an
 
 The app comes with many built-in features, such as authentication using JWT and Google OAuth2, request validation, unit and integration tests, docker support, API documentation, pagination, etc. For more details, check the features list below.
 
+## Quick Start with AI Agent
+
+Use any AI coding agent to initialize this template automatically:
+
+1. Clone the repo:
+   ```bash
+   git clone --depth 1 https://github.com/tommynurwantoro/go-fiber-template.git
+   cd go-fiber-template
+   ```
+2. Open the project in your AI coding tool (Claude Code, Cursor, Copilot, Windsurf, etc.)
+3. Give it this prompt:
+   ```
+   Read setup.md and initialize this project as github.com/myuser/my-project
+   ```
+
+The AI agent will rename the module, update configuration, and verify the build.
+
 ## Quick Start
 
 To create a project, simply run:
