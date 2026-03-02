@@ -23,7 +23,7 @@ Compute the following values from the user inputs. Do not ask the user for these
 | Derived Value          | Rule                                                        | Example                  |
 |------------------------|-------------------------------------------------------------|--------------------------|
 | `binary-name`          | Last segment of the module path                             | `my-project`             |
-| `docker-network-name`  | `<binary-name>-network`                                     | `my-project-network`     |
+| `docker-network-name`  | `app-network`                                               | `app-network`            |
 | `docker-service-name`  | `<binary-name>-app`                                         | `my-project-app`         |
 | `cobra-command-name`   | Same as `binary-name`                                       | `my-project`             |
 
@@ -111,7 +111,7 @@ Replace `go-fiber-template` with `<binary-name>` in the following targets:
 - **migrate-docker-up target**: `--network go-fiber-template_go-network` becomes `--network <binary-name>_<docker-network-name>`
 - **migrate-docker-down target**: `--network go-fiber-template_go-network` becomes `--network <binary-name>_<docker-network-name>`
 
-> Note: Docker Compose prefixes network names with the project name (defaults to the directory name). This assumes the project directory is named `<binary-name>`.
+> Note: Docker Compose prefixes network names with the project directory name. This assumes the directory is named `<binary-name>`. For example, if binary-name is `my-project`, the full network becomes `my-project_app-network`.
 
 ### h. `docker-compose.yml`
 

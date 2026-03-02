@@ -25,8 +25,9 @@ Use any AI coding agent to initialize this template automatically:
 2. Open the project in your AI coding tool (Claude Code, Cursor, Copilot, Windsurf, etc.)
 3. Give it this prompt:
    ```
-   Read setup.md and initialize this project as github.com/myuser/my-project
+   Read setup.md and initialize this project
    ```
+   The agent will ask for your Go module path, app name, and database name.
 
 The AI agent will rename the module, update configuration, and verify the build.
 
