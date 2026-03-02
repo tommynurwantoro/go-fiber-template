@@ -62,9 +62,18 @@ Update the following values:
 
 - `APP_NAME=<app-display-name>`
 - `DATABASE_NAME=<database-name>`
-- `DB_NAME=<database-name>`
 
-If `DB_NAME` does not exist in the file, add it in the database configuration section with a comment indicating it is used by docker-compose.
+The `docker-compose.yml` file also requires `DB_NAME`, `DB_USER`, `DB_PASSWORD`, and `DB_PORT` variables. If these do not exist in `.env.example`, add them in a separate "docker-compose configuration" section:
+
+```
+# docker-compose configuration
+DB_USER=postgres
+DB_PASSWORD=changemeinproduction
+DB_NAME=<database-name>
+DB_PORT=5432
+```
+
+If `DB_NAME` already exists, update it to `<database-name>`.
 
 ### e. `main.go`
 
@@ -124,6 +133,15 @@ No changes needed. Keep `testdb` as-is; it is used for the test database.
 ### k. `.air.toml`
 
 No changes needed. It uses generic paths.
+
+### l. `.github/workflows/build.yml`
+
+Update the following values:
+
+- `APP_NAME: go-fiber-template` becomes `APP_NAME: <app-display-name>`
+- `DATABASE_NAME: fiberdb` becomes `DATABASE_NAME: <database-name>`
+- `POSTGRES_DB: fiberdb` becomes `POSTGRES_DB: <database-name>`
+- In the `pg_isready` command, replace `fiberdb` with `<database-name>`
 
 ---
 
