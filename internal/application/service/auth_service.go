@@ -9,11 +9,8 @@ import (
 	"app/internal/pkg/crypto"
 	"app/internal/pkg/token"
 	"app/internal/pkg/validator"
-	"errors"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/tommynurwantoro/golog"
-	"gorm.io/gorm"
 )
 
 type AuthService interface {
@@ -38,30 +35,17 @@ func (s *AuthServiceImpl) Register(c *fiber.Ctx, req *model.RegisterRequest) (*d
 		return nil, err
 	}
 
-	hashedPassword, err := crypto.HashPassword(req.Password)
-	if err != nil {
-		golog.Error("Error hashing password", err)
-		return nil, myerrors.ErrHashPassword
-	}
-
-	user := &domain.User{
+	newUser, err := s.UserService.CreateUser(c, &model.CreateUserRequest{
 		Name:     req.Name,
 		Email:    req.Email,
-		Password: hashedPassword,
+		Password: req.Password,
+		Role:     "user",
+	})
+	if err != nil {
+		return nil, err
 	}
 
-	result := s.DB.GetDB().WithContext(c.Context()).Create(user)
-	if errors.Is(result.Error, gorm.ErrDuplicatedKey) {
-		golog.Error("Error creating user", result.Error)
-		return nil, myerrors.ErrEmailAlreadyInUse
-	}
-
-	if result.Error != nil {
-		golog.Error("Error creating user", result.Error)
-		return nil, myerrors.ErrCreateUserFailed
-	}
-
-	return user, nil
+	return newUser, nil
 }
 
 func (s *AuthServiceImpl) Login(c *fiber.Ctx, req *model.LoginRequest) (*domain.User, error) {
@@ -71,8 +55,7 @@ func (s *AuthServiceImpl) Login(c *fiber.Ctx, req *model.LoginRequest) (*domain.
 
 	user, err := s.UserService.GetUserByEmail(c, req.Email)
 	if err != nil {
-		golog.Error("Error getting user by email", err)
-		return nil, myerrors.ErrUserNotFound
+		return nil, err
 	}
 
 	if !crypto.CheckPasswordHash(req.Password, user.Password) {
