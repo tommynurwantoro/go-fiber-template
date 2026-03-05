@@ -63,17 +63,17 @@ Update the following values:
 - `APP_NAME=<app-display-name>`
 - `DATABASE_NAME=<database-name>`
 
-The `docker-compose.yml` file also requires `DATABASE_NAME`, `DATABASE_USER`, `DATABASE_PASSWORD`, and `DATABASE_PORT` variables. If these do not exist in `.env.example`, add them in a separate "docker-compose configuration" section:
+Ensure the following variables exist for docker-compose. If any are missing, add them:
 
 ```
-# docker-compose configuration
+DATABASE_HOST=postgresdb
 DATABASE_USER=postgres
 DATABASE_PASSWORD=changemeinproduction
 DATABASE_NAME=<database-name>
 DATABASE_PORT=5432
 ```
 
-If `DATABASE_NAME` already exists, update it to `<database-name>`.
+Update `DATABASE_NAME` to `<database-name>` if it already exists.
 
 ### e. `main.go`
 
@@ -111,7 +111,7 @@ Replace `go-fiber-template` with `<binary-name>` in the following targets:
 - **migrate-docker-up target**: `--network go-fiber-template_go-network` becomes `--network <binary-name>_<docker-network-name>`
 - **migrate-docker-down target**: `--network go-fiber-template_go-network` becomes `--network <binary-name>_<docker-network-name>`
 
-> Note: Docker Compose prefixes network names with the project directory name. This assumes the directory is named `<binary-name>`. For example, if binary-name is `my-project`, the full network becomes `my-project_app-network`.
+> Note: Docker Compose prefixes network names with the project directory name. This assumes the directory is named `<binary-name>`. For example, if binary-name is `my-project`, the full network becomes `my-project_app-network`. If the directory name differs, adjust accordingly.
 
 ### h. `docker-compose.yml`
 
@@ -120,7 +120,9 @@ Apply all of the following replacements:
 - Rename service `go-app` to `<docker-service-name>` (the service key under `services:`)
 - Update `image: go-app` to `image: <docker-service-name>`
 - Update volume mount path `.:/usr/src/go-app` to `.:/usr/src/<docker-service-name>`
-- Rename network `go-network` to `<docker-network-name>` (in the `networks:` definition and all `networks:` references throughout the file)
+- Rename network `go-network` to `<docker-network-name>` in these locations:
+  - `networks:` definition at the bottom of the file
+  - `networks:` references under `adminer`, `postgresdb`, and `go-app` services
 
 ### i. `Dockerfile`
 
@@ -136,12 +138,18 @@ No changes needed. It uses generic paths.
 
 ### l. `.github/workflows/build.yml`
 
-Update the following values:
+Update the following values in the global `env:` section:
 
 - `APP_NAME: go-fiber-template` becomes `APP_NAME: <app-display-name>`
 - `DATABASE_NAME: fiberdb` becomes `DATABASE_NAME: <database-name>`
+
+Update the following in the `services.postgresdb.env:` section:
+
 - `POSTGRES_DB: fiberdb` becomes `POSTGRES_DB: <database-name>`
-- In the `pg_isready` command, replace `fiberdb` with `<database-name>`
+
+Update the `pg_isready` command in the "Wait for PostgreSQL to be ready" step:
+
+- `-d fiberdb` becomes `-d <database-name>`
 
 ---
 
@@ -149,12 +157,13 @@ Update the following values:
 
 After all changes are applied:
 
-1. Delete `setup.md` (this file) — it is no longer needed after initialization.
-2. Delete the `docs/plans/` directory if it exists.
-3. Delete the `.git` directory to remove the template's git history.
-4. Run `git init` to initialize a fresh repository.
-5. Run `go mod tidy` to synchronize dependencies.
-6. Remove the "Quick Start with AI Agent" section from `README.md` if it exists.
+1. Run `go generate ./...` to regenerate mocks with the new module path
+2. Run `go mod tidy` to synchronize dependencies
+3. Delete `setup.md` (this file) — it is no longer needed after initialization
+4. Delete the `docs/plans/` directory if it exists
+5. Delete the `.git` directory to remove the template's git history
+6. Run `git init` to initialize a fresh repository
+7. Remove the "Quick Start with AI Agent" section from `README.md` if it exists
 
 ---
 
