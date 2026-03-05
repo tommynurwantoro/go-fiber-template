@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 )
 
 type User struct {
@@ -17,9 +16,4 @@ type User struct {
 	CreatedAt     time.Time `gorm:"autoCreateTime:milli" json:"-"`
 	UpdatedAt     time.Time `gorm:"autoCreateTime:milli;autoUpdateTime:milli" json:"-"`
 	Token         []Token   `gorm:"foreignKey:user_id;references:id" json:"-"`
-}
-
-func (user *User) BeforeCreate(_ *gorm.DB) error {
-	user.ID = uuid.Must(uuid.NewV7()) // Generate UUIDv7 before create
-	return nil
 }

@@ -7,23 +7,17 @@ import (
 	"context"
 	"errors"
 
+	"github.com/google/uuid"
 	"github.com/tommynurwantoro/golog"
 	"gorm.io/gorm"
 )
-
-//go:generate mockgen -source=token_repository.go -destination=mocks/token_repository.go -package=mocks
-type TokenRepository interface {
-	Create(ctx context.Context, token *domain.Token) (*domain.Token, error)
-	Delete(ctx context.Context, tokenType domain.TokenType, userID string) error
-	DeleteAll(ctx context.Context, userID string) error
-	GetByTokenAndUserID(ctx context.Context, token, userID string) (*domain.Token, error)
-}
 
 type TokenRepositoryImpl struct {
 	DB database.DatabaseAdapter `inject:"database"`
 }
 
 func (r *TokenRepositoryImpl) Create(ctx context.Context, token *domain.Token) (*domain.Token, error) {
+	token.ID = uuid.Must(uuid.NewV7())
 	result := r.DB.GetDB().WithContext(ctx).Create(token)
 	if result.Error != nil {
 		golog.Error("Error creating token", result.Error)
