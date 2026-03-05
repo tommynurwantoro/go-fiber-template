@@ -1,45 +1,43 @@
 package service
 
 import (
-	"app/internal/adapter/database"
-	"app/internal/adapter/database/repository"
 	"app/internal/application/model"
 	"app/internal/domain"
 	"app/internal/domain/myerrors"
+	"app/internal/domain/repository"
 	"app/internal/pkg/crypto"
 	"app/internal/pkg/validator"
+	"context"
 	"errors"
 
-	"github.com/gofiber/fiber/v2"
 	"github.com/tommynurwantoro/golog"
 )
 
 //go:generate mockgen -source=user_service.go -destination=mocks/user_service.go -package=mocks
 type UserService interface {
-	GetUsers(c *fiber.Ctx, params *model.GetUserRequest) ([]domain.User, int64, error)
-	GetUserByID(c *fiber.Ctx, id string) (*domain.User, error)
-	GetUserByEmail(c *fiber.Ctx, email string) (*domain.User, error)
-	CreateUser(c *fiber.Ctx, req *model.CreateUserRequest) (*domain.User, error)
-	UpdatePassOrVerify(c *fiber.Ctx, req *model.UpdatePassOrVerifyRequest, id string) error
-	UpdateUser(c *fiber.Ctx, req *model.UpdateUserRequest) (*domain.User, error)
-	DeleteUser(c *fiber.Ctx, id string) error
-	CreateGoogleUser(c *fiber.Ctx, req *model.CreateGoogleUserRequest) (*domain.User, error)
+	GetUsers(ctx context.Context, params *model.GetUserRequest) ([]domain.User, int64, error)
+	GetUserByID(ctx context.Context, id string) (*domain.User, error)
+	GetUserByEmail(ctx context.Context, email string) (*domain.User, error)
+	CreateUser(ctx context.Context, req *model.CreateUserRequest) (*domain.User, error)
+	UpdatePassOrVerify(ctx context.Context, req *model.UpdatePassOrVerifyRequest, id string) error
+	UpdateUser(ctx context.Context, req *model.UpdateUserRequest) (*domain.User, error)
+	DeleteUser(ctx context.Context, id string) error
+	CreateGoogleUser(ctx context.Context, req *model.CreateGoogleUserRequest) (*domain.User, error)
 }
 
 type UserServiceImpl struct {
-	DB             database.DatabaseAdapter  `inject:"database"`
 	UserRepository repository.UserRepository `inject:"userRepository"`
 	Validator      validator.Validator       `inject:"validator"`
 }
 
-func (u *UserServiceImpl) GetUsers(c *fiber.Ctx, req *model.GetUserRequest) ([]domain.User, int64, error) {
-	if err := u.Validator.Validate(c.Context(), req); err != nil {
+func (u *UserServiceImpl) GetUsers(ctx context.Context, req *model.GetUserRequest) ([]domain.User, int64, error) {
+	if err := u.Validator.Validate(ctx, req); err != nil {
 		golog.Error("Error validating get users request", err)
 		return nil, 0, myerrors.ErrInvalidRequest
 	}
 
 	offset := (req.Page - 1) * req.Limit
-	users, totalResults, err := u.UserRepository.GetAll(c.Context(), req.Limit, offset, req.Search)
+	users, totalResults, err := u.UserRepository.GetAll(ctx, req.Limit, offset, req.Search)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -47,8 +45,8 @@ func (u *UserServiceImpl) GetUsers(c *fiber.Ctx, req *model.GetUserRequest) ([]d
 	return users, totalResults, nil
 }
 
-func (u *UserServiceImpl) GetUserByID(c *fiber.Ctx, id string) (*domain.User, error) {
-	user, err := u.UserRepository.GetByID(c.Context(), id)
+func (u *UserServiceImpl) GetUserByID(ctx context.Context, id string) (*domain.User, error) {
+	user, err := u.UserRepository.GetByID(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -56,8 +54,8 @@ func (u *UserServiceImpl) GetUserByID(c *fiber.Ctx, id string) (*domain.User, er
 	return user, nil
 }
 
-func (u *UserServiceImpl) GetUserByEmail(c *fiber.Ctx, email string) (*domain.User, error) {
-	user, err := u.UserRepository.GetByEmail(c.Context(), email)
+func (u *UserServiceImpl) GetUserByEmail(ctx context.Context, email string) (*domain.User, error) {
+	user, err := u.UserRepository.GetByEmail(ctx, email)
 	if err != nil {
 		return nil, err
 	}
@@ -65,8 +63,8 @@ func (u *UserServiceImpl) GetUserByEmail(c *fiber.Ctx, email string) (*domain.Us
 	return user, nil
 }
 
-func (u *UserServiceImpl) CreateUser(c *fiber.Ctx, req *model.CreateUserRequest) (*domain.User, error) {
-	if err := u.Validator.Validate(c.Context(), req); err != nil {
+func (u *UserServiceImpl) CreateUser(ctx context.Context, req *model.CreateUserRequest) (*domain.User, error) {
+	if err := u.Validator.Validate(ctx, req); err != nil {
 		golog.Error("Error validating create user request", err)
 		return nil, myerrors.ErrInvalidRequest
 	}
@@ -84,7 +82,7 @@ func (u *UserServiceImpl) CreateUser(c *fiber.Ctx, req *model.CreateUserRequest)
 		Role:     req.Role,
 	}
 
-	newUser, err := u.UserRepository.Create(c.Context(), user)
+	newUser, err := u.UserRepository.Create(ctx, user)
 	if err != nil {
 		return nil, err
 	}
@@ -92,8 +90,8 @@ func (u *UserServiceImpl) CreateUser(c *fiber.Ctx, req *model.CreateUserRequest)
 	return newUser, nil
 }
 
-func (u *UserServiceImpl) UpdateUser(c *fiber.Ctx, req *model.UpdateUserRequest) (*domain.User, error) {
-	if err := u.Validator.Validate(c.Context(), req); err != nil {
+func (u *UserServiceImpl) UpdateUser(ctx context.Context, req *model.UpdateUserRequest) (*domain.User, error) {
+	if err := u.Validator.Validate(ctx, req); err != nil {
 		golog.Error("Error validating update user request", err)
 		return nil, myerrors.ErrInvalidRequest
 	}
@@ -117,7 +115,7 @@ func (u *UserServiceImpl) UpdateUser(c *fiber.Ctx, req *model.UpdateUserRequest)
 		Email:    req.Email,
 	}
 
-	updatedUser, err := u.UserRepository.Update(c.Context(), updateBody)
+	updatedUser, err := u.UserRepository.Update(ctx, updateBody)
 	if err != nil {
 		return nil, err
 	}
@@ -125,8 +123,8 @@ func (u *UserServiceImpl) UpdateUser(c *fiber.Ctx, req *model.UpdateUserRequest)
 	return updatedUser, nil
 }
 
-func (u *UserServiceImpl) UpdatePassOrVerify(c *fiber.Ctx, req *model.UpdatePassOrVerifyRequest, id string) error {
-	if err := u.Validator.Validate(c.Context(), req); err != nil {
+func (u *UserServiceImpl) UpdatePassOrVerify(ctx context.Context, req *model.UpdatePassOrVerifyRequest, id string) error {
+	if err := u.Validator.Validate(ctx, req); err != nil {
 		golog.Error("Error validating update pass or verify request", err)
 		return myerrors.ErrInvalidRequest
 	}
@@ -149,7 +147,7 @@ func (u *UserServiceImpl) UpdatePassOrVerify(c *fiber.Ctx, req *model.UpdatePass
 		VerifiedEmail: req.VerifiedEmail,
 	}
 
-	err := u.UserRepository.UpdatePassOrVerify(c.Context(), updateBody, id)
+	err := u.UserRepository.UpdatePassOrVerify(ctx, updateBody, id)
 	if err != nil {
 		return err
 	}
@@ -157,8 +155,8 @@ func (u *UserServiceImpl) UpdatePassOrVerify(c *fiber.Ctx, req *model.UpdatePass
 	return nil
 }
 
-func (u *UserServiceImpl) DeleteUser(c *fiber.Ctx, id string) error {
-	err := u.UserRepository.Delete(c.Context(), id)
+func (u *UserServiceImpl) DeleteUser(ctx context.Context, id string) error {
+	err := u.UserRepository.Delete(ctx, id)
 	if err != nil {
 		return err
 	}
@@ -166,16 +164,16 @@ func (u *UserServiceImpl) DeleteUser(c *fiber.Ctx, id string) error {
 	return nil
 }
 
-func (u *UserServiceImpl) CreateGoogleUser(c *fiber.Ctx, req *model.CreateGoogleUserRequest) (*domain.User, error) {
-	if err := u.Validator.Validate(c.Context(), req); err != nil {
+func (u *UserServiceImpl) CreateGoogleUser(ctx context.Context, req *model.CreateGoogleUserRequest) (*domain.User, error) {
+	if err := u.Validator.Validate(ctx, req); err != nil {
 		golog.Error("Error validating create google user request", err)
 		return nil, myerrors.ErrInvalidRequest
 	}
 
-	userFromDB, err := u.UserRepository.GetByEmail(c.Context(), req.Email)
+	userFromDB, err := u.UserRepository.GetByEmail(ctx, req.Email)
 	if err != nil {
 		if errors.Is(err, myerrors.ErrUserNotFound) {
-			newUser, err := u.UserRepository.Create(c.Context(), &domain.User{
+			newUser, err := u.UserRepository.Create(ctx, &domain.User{
 				Name:          req.Name,
 				Email:         req.Email,
 				VerifiedEmail: req.VerifiedEmail,
@@ -192,7 +190,7 @@ func (u *UserServiceImpl) CreateGoogleUser(c *fiber.Ctx, req *model.CreateGoogle
 	}
 
 	userFromDB.VerifiedEmail = req.VerifiedEmail
-	updatedUser, err := u.UserRepository.Update(c.Context(), userFromDB)
+	updatedUser, err := u.UserRepository.Update(ctx, userFromDB)
 	if err != nil {
 		return nil, err
 	}

@@ -40,7 +40,7 @@ func (a *AuthImpl) JWTAuth(requiredRights ...string) fiber.Handler {
 				return myerrors.ErrInvalidToken
 			}
 
-			_user, err := a.UserService.GetUserByID(c, userID)
+			_user, err := a.UserService.GetUserByID(c.Context(), userID)
 			if err != nil && !errors.Is(err, myerrors.ErrUserNotFound) {
 				golog.Error("Error getting user by id", err)
 				return myerrors.ErrGetUserFailed

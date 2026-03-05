@@ -2,29 +2,29 @@ package service
 
 import (
 	"app/config"
-	"app/internal/adapter/database/repository"
 	"app/internal/application/model"
 	"app/internal/domain"
 	"app/internal/domain/myerrors"
+	"app/internal/domain/repository"
 	"app/internal/pkg/crypto"
 	"app/internal/pkg/token"
 	"app/internal/pkg/validator"
+	"context"
 	"time"
 
-	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/tommynurwantoro/golog"
 )
 
 type TokenService interface {
-	DeleteToken(c *fiber.Ctx, tokenType domain.TokenType, userID string) error
-	DeleteAllToken(c *fiber.Ctx, userID string) error
-	GetTokenByRefreshToken(c *fiber.Ctx, refreshToken string) (*domain.Token, error)
-	GenerateAuthTokens(c *fiber.Ctx, userID string) (*domain.Token, *domain.Token, error)
-	GenerateAccessToken(c *fiber.Ctx, userID string) (*domain.Token, error)
-	GenerateResetPasswordToken(c *fiber.Ctx, req *model.ForgotPasswordRequest) (*domain.Token, error)
-	GenerateVerifyEmailToken(c *fiber.Ctx, userID string) (*domain.Token, error)
+	DeleteToken(ctx context.Context, tokenType domain.TokenType, userID string) error
+	DeleteAllToken(ctx context.Context, userID string) error
+	GetTokenByRefreshToken(ctx context.Context, refreshToken string) (*domain.Token, error)
+	GenerateAuthTokens(ctx context.Context, userID string) (*domain.Token, *domain.Token, error)
+	GenerateAccessToken(ctx context.Context, userID string) (*domain.Token, error)
+	GenerateResetPasswordToken(ctx context.Context, req *model.ForgotPasswordRequest) (*domain.Token, error)
+	GenerateVerifyEmailToken(ctx context.Context, userID string) (*domain.Token, error)
 }
 
 type TokenServiceImpl struct {
@@ -34,21 +34,21 @@ type TokenServiceImpl struct {
 	Validator       validator.Validator        `inject:"validator"`
 }
 
-func (s *TokenServiceImpl) DeleteToken(c *fiber.Ctx, tokenType domain.TokenType, userID string) error {
-	return s.TokenRepository.Delete(c.Context(), tokenType, userID)
+func (s *TokenServiceImpl) DeleteToken(ctx context.Context, tokenType domain.TokenType, userID string) error {
+	return s.TokenRepository.Delete(ctx, tokenType, userID)
 }
 
-func (s *TokenServiceImpl) DeleteAllToken(c *fiber.Ctx, userID string) error {
-	return s.TokenRepository.DeleteAll(c.Context(), userID)
+func (s *TokenServiceImpl) DeleteAllToken(ctx context.Context, userID string) error {
+	return s.TokenRepository.DeleteAll(ctx, userID)
 }
 
-func (s *TokenServiceImpl) GetTokenByRefreshToken(c *fiber.Ctx, refreshToken string) (*domain.Token, error) {
+func (s *TokenServiceImpl) GetTokenByRefreshToken(ctx context.Context, refreshToken string) (*domain.Token, error) {
 	userID, err := token.VerifyToken(refreshToken, s.Conf.JWT.Secret, domain.TokenTypeRefresh.String())
 	if err != nil {
 		return nil, err
 	}
 
-	tokenDoc, err := s.TokenRepository.GetByTokenAndUserID(c.Context(), refreshToken, userID)
+	tokenDoc, err := s.TokenRepository.GetByTokenAndUserID(ctx, refreshToken, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -56,7 +56,7 @@ func (s *TokenServiceImpl) GetTokenByRefreshToken(c *fiber.Ctx, refreshToken str
 	return tokenDoc, nil
 }
 
-func (s *TokenServiceImpl) GenerateAuthTokens(c *fiber.Ctx, userID string) (*domain.Token, *domain.Token, error) {
+func (s *TokenServiceImpl) GenerateAuthTokens(ctx context.Context, userID string) (*domain.Token, *domain.Token, error) {
 	accessTokenExpires := time.Now().UTC().Add(s.Conf.JWT.Expire)
 	accessToken, err := s.generateToken(userID, accessTokenExpires, domain.TokenTypeAccess)
 	if err != nil {
@@ -78,7 +78,7 @@ func (s *TokenServiceImpl) GenerateAuthTokens(c *fiber.Ctx, userID string) (*dom
 		return nil, nil, myerrors.ErrGenerateTokenFailed
 	}
 
-	refreshTokenDomain, err := s.saveToken(c, refreshToken, userID, domain.TokenTypeRefresh, refreshTokenExpires)
+	refreshTokenDomain, err := s.saveToken(ctx, refreshToken, userID, domain.TokenTypeRefresh, refreshTokenExpires)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -86,7 +86,7 @@ func (s *TokenServiceImpl) GenerateAuthTokens(c *fiber.Ctx, userID string) (*dom
 	return accessTokenDomain, refreshTokenDomain, nil
 }
 
-func (s *TokenServiceImpl) GenerateAccessToken(_ *fiber.Ctx, userID string) (*domain.Token, error) {
+func (s *TokenServiceImpl) GenerateAccessToken(_ context.Context, userID string) (*domain.Token, error) {
 	accessTokenExpires := time.Now().UTC().Add(s.Conf.JWT.Expire)
 	accessToken, err := s.generateToken(userID, accessTokenExpires, domain.TokenTypeAccess)
 	if err != nil {
@@ -105,14 +105,14 @@ func (s *TokenServiceImpl) GenerateAccessToken(_ *fiber.Ctx, userID string) (*do
 }
 
 func (s *TokenServiceImpl) GenerateResetPasswordToken(
-	c *fiber.Ctx, req *model.ForgotPasswordRequest,
+	ctx context.Context, req *model.ForgotPasswordRequest,
 ) (*domain.Token, error) {
-	if err := s.Validator.Validate(c.Context(), req); err != nil {
+	if err := s.Validator.Validate(ctx, req); err != nil {
 		golog.Error("Error validating reset password request", err)
 		return nil, myerrors.ErrInvalidRequest
 	}
 
-	user, err := s.UserService.GetUserByEmail(c, req.Email)
+	user, err := s.UserService.GetUserByEmail(ctx, req.Email)
 	if err != nil {
 		return nil, err
 	}
@@ -129,7 +129,7 @@ func (s *TokenServiceImpl) GenerateResetPasswordToken(
 	}
 
 	resetPasswordTokenDomain, err := s.saveToken(
-		c, resetPasswordToken, user.ID.String(), domain.TokenTypeResetPassword, expires,
+		ctx, resetPasswordToken, user.ID.String(), domain.TokenTypeResetPassword, expires,
 	)
 	if err != nil {
 		return nil, err
@@ -138,7 +138,7 @@ func (s *TokenServiceImpl) GenerateResetPasswordToken(
 	return resetPasswordTokenDomain, nil
 }
 
-func (s *TokenServiceImpl) GenerateVerifyEmailToken(c *fiber.Ctx, userID string) (*domain.Token, error) {
+func (s *TokenServiceImpl) GenerateVerifyEmailToken(ctx context.Context, userID string) (*domain.Token, error) {
 	expires := time.Now().UTC().Add(s.Conf.JWT.VerifyEmailExpire)
 	verifyEmailToken, err := s.generateToken(userID, expires, domain.TokenTypeVerifyEmail)
 	if err != nil {
@@ -146,7 +146,7 @@ func (s *TokenServiceImpl) GenerateVerifyEmailToken(c *fiber.Ctx, userID string)
 		return nil, myerrors.ErrGenerateTokenFailed
 	}
 
-	verifyEmailTokenDomain, err := s.saveToken(c, verifyEmailToken, userID, domain.TokenTypeVerifyEmail, expires)
+	verifyEmailTokenDomain, err := s.saveToken(ctx, verifyEmailToken, userID, domain.TokenTypeVerifyEmail, expires)
 	if err != nil {
 		return nil, err
 	}
@@ -167,9 +167,9 @@ func (s *TokenServiceImpl) generateToken(userID string, expires time.Time, token
 }
 
 func (s *TokenServiceImpl) saveToken(
-	c *fiber.Ctx, token, userID string, tokenType domain.TokenType, expires time.Time,
+	ctx context.Context, token, userID string, tokenType domain.TokenType, expires time.Time,
 ) (*domain.Token, error) {
-	if err := s.TokenRepository.Delete(c.Context(), tokenType, userID); err != nil {
+	if err := s.TokenRepository.Delete(ctx, tokenType, userID); err != nil {
 		golog.Error("Error deleting token", err)
 		return nil, myerrors.ErrDeleteTokenFailed
 	}
@@ -181,7 +181,7 @@ func (s *TokenServiceImpl) saveToken(
 		Expires: expires,
 	}
 
-	savedToken, err := s.TokenRepository.Create(c.Context(), tokenDoc)
+	savedToken, err := s.TokenRepository.Create(ctx, tokenDoc)
 	if err != nil {
 		return nil, err
 	}

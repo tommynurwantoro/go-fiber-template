@@ -55,12 +55,12 @@ func (a *AuthHandlerImpl) Register(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, "Invalid request body")
 	}
 
-	user, err := a.AuthService.Register(c, req)
+	user, err := a.AuthService.Register(c.Context(), req)
 	if err != nil {
 		return err
 	}
 
-	accessToken, refreshToken, err := a.TokenService.GenerateAuthTokens(c, user.ID.String())
+	accessToken, refreshToken, err := a.TokenService.GenerateAuthTokens(c.Context(), user.ID.String())
 	if err != nil {
 		return err
 	}
@@ -97,12 +97,12 @@ func (a *AuthHandlerImpl) Login(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, "Invalid request body")
 	}
 
-	user, err := a.AuthService.Login(c, req)
+	user, err := a.AuthService.Login(c.Context(), req)
 	if err != nil {
 		return err
 	}
 
-	accessToken, refreshToken, err := a.TokenService.GenerateAuthTokens(c, user.ID.String())
+	accessToken, refreshToken, err := a.TokenService.GenerateAuthTokens(c.Context(), user.ID.String())
 	if err != nil {
 		return err
 	}
@@ -137,7 +137,7 @@ func (a *AuthHandlerImpl) Logout(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, "Invalid request body")
 	}
 
-	if err := a.AuthService.Logout(c, req); err != nil {
+	if err := a.AuthService.Logout(c.Context(), req); err != nil {
 		return err
 	}
 
@@ -164,7 +164,7 @@ func (a *AuthHandlerImpl) RefreshTokens(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, "Invalid request body")
 	}
 
-	accessToken, err := a.AuthService.RefreshAuth(c, req)
+	accessToken, err := a.AuthService.RefreshAuth(c.Context(), req)
 	if err != nil {
 		return err
 	}
@@ -197,7 +197,7 @@ func (a *AuthHandlerImpl) ForgotPassword(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, "Invalid request body")
 	}
 
-	resetPasswordToken, err := a.TokenService.GenerateResetPasswordToken(c, req)
+	resetPasswordToken, err := a.TokenService.GenerateResetPasswordToken(c.Context(), req)
 	if err != nil {
 		return err
 	}
@@ -229,7 +229,7 @@ func (a *AuthHandlerImpl) ResetPassword(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, "Invalid request body")
 	}
 
-	if err := a.AuthService.ResetPassword(c, req); err != nil {
+	if err := a.AuthService.ResetPassword(c.Context(), req); err != nil {
 		return err
 	}
 
@@ -253,7 +253,7 @@ func (a *AuthHandlerImpl) SendVerificationEmail(c *fiber.Ctx) error {
 	}
 	userID := user.ID.String()
 
-	verifyEmailToken, err := a.TokenService.GenerateVerifyEmailToken(c, userID)
+	verifyEmailToken, err := a.TokenService.GenerateVerifyEmailToken(c.Context(), userID)
 	if err != nil {
 		return err
 	}
@@ -285,7 +285,7 @@ func (a *AuthHandlerImpl) VerifyEmail(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, "Invalid request body")
 	}
 
-	if err := a.AuthService.VerifyEmail(c, req); err != nil {
+	if err := a.AuthService.VerifyEmail(c.Context(), req); err != nil {
 		return err
 	}
 
@@ -362,12 +362,12 @@ func (a *AuthHandlerImpl) GoogleCallback(c *fiber.Ctx) error {
 		return errJSON
 	}
 
-	user, err := a.UserService.CreateGoogleUser(c, googleUser)
+	user, err := a.UserService.CreateGoogleUser(c.Context(), googleUser)
 	if err != nil {
 		return err
 	}
 
-	accessToken, refreshToken, err := a.TokenService.GenerateAuthTokens(c, user.ID.String())
+	accessToken, refreshToken, err := a.TokenService.GenerateAuthTokens(c.Context(), user.ID.String())
 	if err != nil {
 		return err
 	}

@@ -9,17 +9,16 @@ import (
 	"app/internal/pkg/crypto"
 	"app/internal/pkg/token"
 	"app/internal/pkg/validator"
-
-	"github.com/gofiber/fiber/v2"
+	"context"
 )
 
 type AuthService interface {
-	Register(c *fiber.Ctx, req *model.RegisterRequest) (*domain.User, error)
-	Login(c *fiber.Ctx, req *model.LoginRequest) (*domain.User, error)
-	Logout(c *fiber.Ctx, req *model.LogoutRequest) error
-	RefreshAuth(c *fiber.Ctx, req *model.RefreshTokenRequest) (*domain.Token, error)
-	ResetPassword(c *fiber.Ctx, req *model.ResetPasswordRequest) error
-	VerifyEmail(c *fiber.Ctx, query *model.VerifyEmailRequest) error
+	Register(ctx context.Context, req *model.RegisterRequest) (*domain.User, error)
+	Login(ctx context.Context, req *model.LoginRequest) (*domain.User, error)
+	Logout(ctx context.Context, req *model.LogoutRequest) error
+	RefreshAuth(ctx context.Context, req *model.RefreshTokenRequest) (*domain.Token, error)
+	ResetPassword(ctx context.Context, req *model.ResetPasswordRequest) error
+	VerifyEmail(ctx context.Context, query *model.VerifyEmailRequest) error
 }
 
 type AuthServiceImpl struct {
@@ -30,12 +29,12 @@ type AuthServiceImpl struct {
 	Validate     validator.Validator      `inject:"validator"`
 }
 
-func (s *AuthServiceImpl) Register(c *fiber.Ctx, req *model.RegisterRequest) (*domain.User, error) {
-	if err := s.Validate.Validate(c.Context(), req); err != nil {
+func (s *AuthServiceImpl) Register(ctx context.Context, req *model.RegisterRequest) (*domain.User, error) {
+	if err := s.Validate.Validate(ctx, req); err != nil {
 		return nil, err
 	}
 
-	newUser, err := s.UserService.CreateUser(c, &model.CreateUserRequest{
+	newUser, err := s.UserService.CreateUser(ctx, &model.CreateUserRequest{
 		Name:     req.Name,
 		Email:    req.Email,
 		Password: req.Password,
@@ -48,12 +47,12 @@ func (s *AuthServiceImpl) Register(c *fiber.Ctx, req *model.RegisterRequest) (*d
 	return newUser, nil
 }
 
-func (s *AuthServiceImpl) Login(c *fiber.Ctx, req *model.LoginRequest) (*domain.User, error) {
-	if err := s.Validate.Validate(c.Context(), req); err != nil {
+func (s *AuthServiceImpl) Login(ctx context.Context, req *model.LoginRequest) (*domain.User, error) {
+	if err := s.Validate.Validate(ctx, req); err != nil {
 		return nil, err
 	}
 
-	user, err := s.UserService.GetUserByEmail(c, req.Email)
+	user, err := s.UserService.GetUserByEmail(ctx, req.Email)
 	if err != nil {
 		return nil, err
 	}
@@ -65,35 +64,35 @@ func (s *AuthServiceImpl) Login(c *fiber.Ctx, req *model.LoginRequest) (*domain.
 	return user, nil
 }
 
-func (s *AuthServiceImpl) Logout(c *fiber.Ctx, req *model.LogoutRequest) error {
-	if err := s.Validate.Validate(c.Context(), req); err != nil {
+func (s *AuthServiceImpl) Logout(ctx context.Context, req *model.LogoutRequest) error {
+	if err := s.Validate.Validate(ctx, req); err != nil {
 		return err
 	}
 
-	token, err := s.TokenService.GetTokenByRefreshToken(c, req.RefreshToken)
+	token, err := s.TokenService.GetTokenByRefreshToken(ctx, req.RefreshToken)
 	if err != nil {
 		return err
 	}
 
-	return s.TokenService.DeleteToken(c, domain.TokenTypeRefresh, token.UserID.String())
+	return s.TokenService.DeleteToken(ctx, domain.TokenTypeRefresh, token.UserID.String())
 }
 
-func (s *AuthServiceImpl) RefreshAuth(c *fiber.Ctx, req *model.RefreshTokenRequest) (*domain.Token, error) {
-	if err := s.Validate.Validate(c.Context(), req); err != nil {
+func (s *AuthServiceImpl) RefreshAuth(ctx context.Context, req *model.RefreshTokenRequest) (*domain.Token, error) {
+	if err := s.Validate.Validate(ctx, req); err != nil {
 		return nil, err
 	}
 
-	token, err := s.TokenService.GetTokenByRefreshToken(c, req.RefreshToken)
+	token, err := s.TokenService.GetTokenByRefreshToken(ctx, req.RefreshToken)
 	if err != nil {
 		return nil, err
 	}
 
-	user, err := s.UserService.GetUserByID(c, token.UserID.String())
+	user, err := s.UserService.GetUserByID(ctx, token.UserID.String())
 	if err != nil {
 		return nil, err
 	}
 
-	accessToken, err := s.TokenService.GenerateAccessToken(c, user.ID.String())
+	accessToken, err := s.TokenService.GenerateAccessToken(ctx, user.ID.String())
 	if err != nil {
 		return nil, err
 	}
@@ -101,8 +100,8 @@ func (s *AuthServiceImpl) RefreshAuth(c *fiber.Ctx, req *model.RefreshTokenReque
 	return accessToken, nil
 }
 
-func (s *AuthServiceImpl) ResetPassword(c *fiber.Ctx, req *model.ResetPasswordRequest) error {
-	if err := s.Validate.Validate(c.Context(), req); err != nil {
+func (s *AuthServiceImpl) ResetPassword(ctx context.Context, req *model.ResetPasswordRequest) error {
+	if err := s.Validate.Validate(ctx, req); err != nil {
 		return err
 	}
 
@@ -111,27 +110,27 @@ func (s *AuthServiceImpl) ResetPassword(c *fiber.Ctx, req *model.ResetPasswordRe
 		return err
 	}
 
-	user, err := s.UserService.GetUserByID(c, userID)
+	user, err := s.UserService.GetUserByID(ctx, userID)
 	if err != nil {
 		return err
 	}
 
-	if errUpdate := s.UserService.UpdatePassOrVerify(c, &model.UpdatePassOrVerifyRequest{
+	if errUpdate := s.UserService.UpdatePassOrVerify(ctx, &model.UpdatePassOrVerifyRequest{
 		Password:      req.Password,
 		VerifiedEmail: user.VerifiedEmail,
 	}, user.ID.String()); errUpdate != nil {
 		return errUpdate
 	}
 
-	if errToken := s.TokenService.DeleteToken(c, domain.TokenTypeResetPassword, user.ID.String()); errToken != nil {
+	if errToken := s.TokenService.DeleteToken(ctx, domain.TokenTypeResetPassword, user.ID.String()); errToken != nil {
 		return errToken
 	}
 
 	return nil
 }
 
-func (s *AuthServiceImpl) VerifyEmail(c *fiber.Ctx, req *model.VerifyEmailRequest) error {
-	if err := s.Validate.Validate(c.Context(), req); err != nil {
+func (s *AuthServiceImpl) VerifyEmail(ctx context.Context, req *model.VerifyEmailRequest) error {
+	if err := s.Validate.Validate(ctx, req); err != nil {
 		return err
 	}
 
@@ -140,12 +139,12 @@ func (s *AuthServiceImpl) VerifyEmail(c *fiber.Ctx, req *model.VerifyEmailReques
 		return err
 	}
 
-	user, err := s.UserService.GetUserByID(c, userID)
+	user, err := s.UserService.GetUserByID(ctx, userID)
 	if err != nil {
 		return err
 	}
 
-	if delErr := s.TokenService.DeleteToken(c, domain.TokenTypeVerifyEmail, user.ID.String()); delErr != nil {
+	if delErr := s.TokenService.DeleteToken(ctx, domain.TokenTypeVerifyEmail, user.ID.String()); delErr != nil {
 		return delErr
 	}
 

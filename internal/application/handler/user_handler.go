@@ -45,7 +45,7 @@ func (u *UserHandlerImpl) GetUsers(c *fiber.Ctx) error {
 		Search: c.Query("search", ""),
 	}
 
-	users, totalResults, err := u.UserService.GetUsers(c, query)
+	users, totalResults, err := u.UserService.GetUsers(c.Context(), query)
 	if err != nil {
 		return err
 	}
@@ -79,7 +79,7 @@ func (u *UserHandlerImpl) GetUserByID(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, "Invalid user ID")
 	}
 
-	user, err := u.UserService.GetUserByID(c, userID)
+	user, err := u.UserService.GetUserByID(c.Context(), userID)
 	if err != nil {
 		return err
 	}
@@ -117,7 +117,7 @@ func (u *UserHandlerImpl) CreateUser(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, "Invalid request body")
 	}
 
-	user, err := u.UserService.CreateUser(c, req)
+	user, err := u.UserService.CreateUser(c.Context(), req)
 	if err != nil {
 		return err
 	}
@@ -164,7 +164,7 @@ func (u *UserHandlerImpl) UpdateUser(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, "Invalid request body")
 	}
 
-	user, err := u.UserService.UpdateUser(c, req)
+	user, err := u.UserService.UpdateUser(c.Context(), req)
 	if err != nil {
 		return err
 	}
@@ -201,11 +201,11 @@ func (u *UserHandlerImpl) DeleteUser(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, "Invalid user ID")
 	}
 
-	if err := u.TokenService.DeleteAllToken(c, userID); err != nil {
+	if err := u.TokenService.DeleteAllToken(c.Context(), userID); err != nil {
 		return err
 	}
 
-	if err := u.UserService.DeleteUser(c, userID); err != nil {
+	if err := u.UserService.DeleteUser(c.Context(), userID); err != nil {
 		return err
 	}
 
