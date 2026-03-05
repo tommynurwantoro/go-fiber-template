@@ -53,7 +53,7 @@ func (r *TokenRepositoryImpl) GetByTokenAndUserID(ctx context.Context, token, us
 	var tokenDoc domain.Token
 
 	result := r.DB.GetDB().WithContext(ctx).
-		First(tokenDoc, "token = ? AND user_id = ?", token, userID)
+		First(&tokenDoc, "token = ? AND user_id = ?", token, userID)
 
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
