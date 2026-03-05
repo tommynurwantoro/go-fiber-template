@@ -267,7 +267,8 @@ REDIRECT_URL=http://localhost:8888/auth/google-callback
 ├── docs/                   # Swagger generated files
 ├── internal/
 │   ├── adapter/            # External adapters (REST, DB, OAuth, Email)
-│   │   ├── database/      # GORM connection & migrations
+│   │   ├── database/      # GORM connection & repository implementations
+│   │   │   └── repository/
 │   │   ├── oauth/
 │   │   └── rest/          # Fiber app & error handling
 │   ├── application/       # Application layer (handlers, services, models)
@@ -276,7 +277,9 @@ REDIRECT_URL=http://localhost:8888/auth/google-callback
 │   │   ├── router/
 │   │   └── service/
 │   ├── bootstrap/         # App bootstrap & DI
-│   ├── domain/            # Domain entities & errors
+│   ├── domain/            # Domain layer (entities, errors, repository interfaces)
+│   │   ├── repository/    # Repository interfaces (ports)
+│   │   └── myerrors/      # Centralized domain errors
 │   └── pkg/               # Shared packages (middleware, validator, crypto, etc.)
 ├── main.go                # Entry point
 └── .env                   # Environment overrides (copy from .env.example)

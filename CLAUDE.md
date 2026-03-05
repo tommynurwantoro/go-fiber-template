@@ -39,15 +39,15 @@ make migrate-docker-down  # Rollback migrations in Docker network
 
 ## Architecture Overview
 
-This is a Go Fiber REST API using **layered architecture** with dependency injection:
+This is a Go Fiber REST API using **layered architecture** with dependency injection and elements of hexagonal architecture:
 
 ```
 cmd/                    # Cobra CLI entrypoints
 internal/
   adapter/              # External adapters (implements ports)
-    database/           # GORM database adapter & repositories
-      repository/       # Repository implementations
-      mocks/           # Generated mocks
+    database/           # GORM database adapter
+      repository/       # Repository implementations (adapters)
+      mocks/            # Generated mocks
     email/              # Email adapter (gomail)
     oauth/              # OAuth2 adapters (Google)
     rest/               # Fiber app setup, error handling
@@ -55,11 +55,14 @@ internal/
     handler/            # HTTP handlers (controllers)
     model/              # Request/response DTOs
     router/             # Route registration
-    service/            # Business logic
-      mocks/           # Generated mocks
+    service/            # Business logic (use cases)
+      mocks/            # Generated mocks
   bootstrap/            # DI container setup, app startup
-  domain/               # Domain entities & errors
+  domain/               # Domain layer (core)
+    repository/         # Repository INTERFACES (ports)
     myerrors/           # Centralized domain errors
+    user.go             # Domain entities
+    token.go
   pkg/                  # Shared packages
     crypto/             # Password hashing
     formatter/          # Response formatting
@@ -74,15 +77,23 @@ config/                 # Config models, roles, token types
 **Dependency Injection**: Uses `gontainer` with struct tags:
 ```go
 type UserServiceImpl struct {
-    DB        database.DatabaseAdapter  `inject:"database"`
-    Validator validator.Validator       `inject:"validator"`
+    UserRepository repository.UserRepository `inject:"userRepository"`
+    Validator      validator.Validator       `inject:"validator"`
 }
 ```
 Services are registered in `internal/bootstrap/` and auto-injected on `appContainer.Ready()`.
 
-**Repository Pattern**: Data access through repository interfaces:
-- Repository interfaces in `internal/adapter/database/repository/`
+**Repository Pattern (Hexagonal)**: Data access through repository interfaces:
+- Repository **interfaces** (ports) in `internal/domain/repository/`
+- Repository **implementations** (adapters) in `internal/adapter/database/repository/`
 - Implementations use GORM via `database.DatabaseAdapter` interface
+- Services depend on interfaces, not implementations
+
+**Framework-Free Services**: Services use `context.Context` instead of framework-specific types:
+```go
+func (u *UserServiceImpl) CreateUser(ctx context.Context, req *model.CreateUserRequest) (*domain.User, error)
+```
+This allows services to be reused across different contexts (HTTP, gRPC, CLI, message queues).
 
 **Domain-Driven Errors**: Centralized in `internal/domain/myerrors/`:
 ```go
@@ -94,15 +105,16 @@ var ErrUserNotFound = errors.New("user not found")
 ## Adding New Features
 
 1. **Create domain entity** in `internal/domain/` (if needed)
-2. **Create repository interface + implementation** in `internal/adapter/database/repository/`
-3. **Register repository** in `internal/bootstrap/adapter.go`
-4. **Create service** in `internal/application/service/` with `//go:generate mockgen` directive
-5. **Register service** in `internal/bootstrap/application.go`
-6. **Create handler** in `internal/application/handler/`
-7. **Register handler** in `internal/bootstrap/application.go`
-8. **Add routes** in `internal/application/router/router.go`
-9. **Generate mocks**: `go generate ./...`
-10. **Generate swagger docs**: `make swagger`
+2. **Create repository interface** in `internal/domain/repository/` with `//go:generate mockgen` directive
+3. **Create repository implementation** in `internal/adapter/database/repository/`
+4. **Register repository** in `internal/bootstrap/adapter.go`
+5. **Create service** in `internal/application/service/` with `//go:generate mockgen` directive
+6. **Register service** in `internal/bootstrap/application.go`
+7. **Create handler** in `internal/application/handler/`
+8. **Register handler** in `internal/bootstrap/application.go`
+9. **Add routes** in `internal/application/router/router.go`
+10. **Generate mocks**: `go generate ./...`
+11. **Generate swagger docs**: `make swagger`
 
 ## Mock Generation
 
