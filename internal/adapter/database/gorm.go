@@ -10,6 +10,7 @@ import (
 	"gorm.io/gorm/logger"
 )
 
+//go:generate mockgen -source=gorm.go -destination=mocks/gorm.go -package=mocks
 type DatabaseAdapter interface {
 	Ping() error
 	GetDB() *gorm.DB

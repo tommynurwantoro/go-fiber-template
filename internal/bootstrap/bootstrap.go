@@ -24,6 +24,7 @@ func RunService(conf *config.Config) {
 	appContainer.RegisterService("validator", validator.NewGoValidator())
 
 	RegisterAdapters()
+	RegisterRepositories()
 	RegisterServices()
 	RegisterMiddleware()
 	RegisterHandlers()

@@ -7,7 +7,8 @@ tmp/
 
 lint.txt
 main
-bin/golangci-lint
+bin/
 
 logs/
 mocks/
+*.out

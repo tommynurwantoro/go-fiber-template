@@ -2,6 +2,7 @@ package service
 
 import (
 	"app/internal/adapter/database"
+	"app/internal/adapter/database/repository"
 	"app/internal/application/model"
 	"app/internal/domain"
 	"app/internal/domain/myerrors"
@@ -11,9 +12,9 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/tommynurwantoro/golog"
-	"gorm.io/gorm"
 )
 
+//go:generate mockgen -source=user_service.go -destination=mocks/user_service.go -package=mocks
 type UserService interface {
 	GetUsers(c *fiber.Ctx, params *model.GetUserRequest) ([]domain.User, int64, error)
 	GetUserByID(c *fiber.Ctx, id string) (*domain.User, error)
@@ -26,74 +27,39 @@ type UserService interface {
 }
 
 type UserServiceImpl struct {
-	DB        database.DatabaseAdapter `inject:"database"`
-	Validator validator.Validator      `inject:"validator"`
+	DB             database.DatabaseAdapter  `inject:"database"`
+	UserRepository repository.UserRepository `inject:"userRepository"`
+	Validator      validator.Validator       `inject:"validator"`
 }
 
 func (u *UserServiceImpl) GetUsers(c *fiber.Ctx, req *model.GetUserRequest) ([]domain.User, int64, error) {
-	var users []domain.User
-	var totalResults int64
-
 	if err := u.Validator.Validate(c.Context(), req); err != nil {
 		golog.Error("Error validating get users request", err)
 		return nil, 0, myerrors.ErrInvalidRequest
 	}
 
 	offset := (req.Page - 1) * req.Limit
-	query := u.DB.GetDB().WithContext(c.Context()).Order("created_at asc")
-
-	if search := req.Search; search != "" {
-		query = query.Where("name LIKE ? OR email LIKE ? OR role LIKE ?",
-			"%"+search+"%", "%"+search+"%", "%"+search+"%")
-	}
-
-	result := query.Find(&users).Count(&totalResults)
-	if result.Error != nil {
-		golog.Error("Error counting users", result.Error)
-		return nil, 0, myerrors.ErrGetUserFailed
-	}
-
-	result = query.Limit(req.Limit).Offset(offset).Find(&users)
-	if result.Error != nil {
-		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			return nil, 0, myerrors.ErrUserNotFound
-		}
-		golog.Error("Error finding users", result.Error)
-		return nil, 0, myerrors.ErrGetUserFailed
+	users, totalResults, err := u.UserRepository.GetAll(c.Context(), req.Limit, offset, req.Search)
+	if err != nil {
+		return nil, 0, err
 	}
 
 	return users, totalResults, nil
 }
 
 func (u *UserServiceImpl) GetUserByID(c *fiber.Ctx, id string) (*domain.User, error) {
-	user := new(domain.User)
-
-	result := u.DB.GetDB().WithContext(c.Context()).First(user, "id = ?", id)
-
-	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-		return nil, myerrors.ErrUserNotFound
-	}
-
-	if result.Error != nil {
-		golog.Error("Error getting user by id", result.Error)
-		return nil, myerrors.ErrGetUserFailed
+	user, err := u.UserRepository.GetByID(c.Context(), id)
+	if err != nil {
+		return nil, err
 	}
 
 	return user, nil
 }
 
 func (u *UserServiceImpl) GetUserByEmail(c *fiber.Ctx, email string) (*domain.User, error) {
-	user := new(domain.User)
-
-	result := u.DB.GetDB().WithContext(c.Context()).Where("email = ?", email).First(user)
-
-	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-		return nil, myerrors.ErrUserNotFound
-	}
-
-	if result.Error != nil {
-		golog.Error("Error getting user by email", result.Error)
-		return nil, myerrors.ErrGetUserFailed
+	user, err := u.UserRepository.GetByEmail(c.Context(), email)
+	if err != nil {
+		return nil, err
 	}
 
 	return user, nil
@@ -118,18 +84,12 @@ func (u *UserServiceImpl) CreateUser(c *fiber.Ctx, req *model.CreateUserRequest)
 		Role:     req.Role,
 	}
 
-	result := u.DB.GetDB().WithContext(c.Context()).Create(user)
-
-	if errors.Is(result.Error, gorm.ErrDuplicatedKey) {
-		return nil, myerrors.ErrEmailAlreadyInUse
+	newUser, err := u.UserRepository.Create(c.Context(), user)
+	if err != nil {
+		return nil, err
 	}
 
-	if result.Error != nil {
-		golog.Error("Error creating user", result.Error)
-		return nil, myerrors.ErrCreateUserFailed
-	}
-
-	return user, nil
+	return newUser, nil
 }
 
 func (u *UserServiceImpl) UpdateUser(c *fiber.Ctx, req *model.UpdateUserRequest) (*domain.User, error) {
@@ -157,28 +117,12 @@ func (u *UserServiceImpl) UpdateUser(c *fiber.Ctx, req *model.UpdateUserRequest)
 		Email:    req.Email,
 	}
 
-	result := u.DB.GetDB().WithContext(c.Context()).Where("id = ?", req.UserID).Updates(updateBody)
-
-	if errors.Is(result.Error, gorm.ErrDuplicatedKey) {
-		return nil, myerrors.ErrEmailAlreadyInUse
-	}
-
-	if result.RowsAffected == 0 {
-		return nil, myerrors.ErrUserNotFound
-	}
-
-	if result.Error != nil {
-		golog.Error("Error updating user", result.Error)
-		return nil, myerrors.ErrUpdateUserFailed
-	}
-
-	user, err := u.GetUserByID(c, req.UserID)
+	updatedUser, err := u.UserRepository.Update(c.Context(), updateBody)
 	if err != nil {
-		golog.Error("Error getting user by id", err)
-		return nil, myerrors.ErrGetUserFailed
+		return nil, err
 	}
 
-	return user, nil
+	return updatedUser, nil
 }
 
 func (u *UserServiceImpl) UpdatePassOrVerify(c *fiber.Ctx, req *model.UpdatePassOrVerifyRequest, id string) error {
@@ -205,35 +149,21 @@ func (u *UserServiceImpl) UpdatePassOrVerify(c *fiber.Ctx, req *model.UpdatePass
 		VerifiedEmail: req.VerifiedEmail,
 	}
 
-	result := u.DB.GetDB().WithContext(c.Context()).Where("id = ?", id).Updates(updateBody)
-
-	if result.RowsAffected == 0 {
-		return myerrors.ErrUserNotFound
-	}
-
-	if result.Error != nil {
-		golog.Error("Error updating user password or verifiedEmail", result.Error)
-		return myerrors.ErrUpdatePassOrVerifyFailed
+	err := u.UserRepository.UpdatePassOrVerify(c.Context(), updateBody, id)
+	if err != nil {
+		return err
 	}
 
 	return nil
 }
 
 func (u *UserServiceImpl) DeleteUser(c *fiber.Ctx, id string) error {
-	user := new(domain.User)
-
-	result := u.DB.GetDB().WithContext(c.Context()).Delete(user, "id = ?", id)
-
-	if result.RowsAffected == 0 {
-		return myerrors.ErrUserNotFound
+	err := u.UserRepository.Delete(c.Context(), id)
+	if err != nil {
+		return err
 	}
 
-	if result.Error != nil {
-		golog.Error("Error deleting user", result.Error)
-		return myerrors.ErrDeleteUserFailed
-	}
-
-	return result.Error
+	return nil
 }
 
 func (u *UserServiceImpl) CreateGoogleUser(c *fiber.Ctx, req *model.CreateGoogleUserRequest) (*domain.User, error) {
@@ -242,22 +172,19 @@ func (u *UserServiceImpl) CreateGoogleUser(c *fiber.Ctx, req *model.CreateGoogle
 		return nil, myerrors.ErrInvalidRequest
 	}
 
-	userFromDB, err := u.GetUserByEmail(c, req.Email)
+	userFromDB, err := u.UserRepository.GetByEmail(c.Context(), req.Email)
 	if err != nil {
 		if errors.Is(err, myerrors.ErrUserNotFound) {
-			user := &domain.User{
+			newUser, err := u.UserRepository.Create(c.Context(), &domain.User{
 				Name:          req.Name,
 				Email:         req.Email,
 				VerifiedEmail: req.VerifiedEmail,
+			})
+			if err != nil {
+				return nil, err
 			}
 
-			result := u.DB.GetDB().WithContext(c.Context()).Create(user)
-			if result.Error != nil {
-				golog.Error("Error creating user", result.Error)
-				return nil, myerrors.ErrCreateUserFailed
-			}
-
-			return user, nil
+			return newUser, nil
 		}
 
 		golog.Error("Error getting user by email", err)
@@ -265,11 +192,10 @@ func (u *UserServiceImpl) CreateGoogleUser(c *fiber.Ctx, req *model.CreateGoogle
 	}
 
 	userFromDB.VerifiedEmail = req.VerifiedEmail
-	result := u.DB.GetDB().WithContext(c.Context()).Save(userFromDB)
-	if result.Error != nil {
-		golog.Error("Error updating user", result.Error)
-		return nil, myerrors.ErrUpdateUserFailed
+	updatedUser, err := u.UserRepository.Update(c.Context(), userFromDB)
+	if err != nil {
+		return nil, err
 	}
 
-	return userFromDB, nil
+	return updatedUser, nil
 }
