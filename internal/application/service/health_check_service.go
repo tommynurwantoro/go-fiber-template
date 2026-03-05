@@ -9,6 +9,7 @@ import (
 	"github.com/tommynurwantoro/golog"
 )
 
+//go:generate mockgen -source=health_check_service.go -destination=mocks/health_check_service.go -package=mocks
 type HealthCheckService interface {
 	GormCheck() error
 	MemoryHeapCheck() error

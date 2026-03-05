@@ -2,7 +2,6 @@ package service
 
 import (
 	"app/config"
-	"app/internal/adapter/database"
 	"app/internal/application/model"
 	"app/internal/domain"
 	"app/internal/domain/myerrors"
@@ -12,6 +11,7 @@ import (
 	"context"
 )
 
+//go:generate mockgen -source=auth_service.go -destination=mocks/auth_service.go -package=mocks
 type AuthService interface {
 	Register(ctx context.Context, req *model.RegisterRequest) (*domain.User, error)
 	Login(ctx context.Context, req *model.LoginRequest) (*domain.User, error)
@@ -22,11 +22,10 @@ type AuthService interface {
 }
 
 type AuthServiceImpl struct {
-	Conf         *config.Config           `inject:"config"`
-	DB           database.DatabaseAdapter `inject:"database"`
-	TokenService TokenService             `inject:"tokenService"`
-	UserService  UserService              `inject:"userService"`
-	Validate     validator.Validator      `inject:"validator"`
+	Conf         *config.Config      `inject:"config"`
+	TokenService TokenService        `inject:"tokenService"`
+	UserService  UserService         `inject:"userService"`
+	Validate     validator.Validator `inject:"validator"`
 }
 
 func (s *AuthServiceImpl) Register(ctx context.Context, req *model.RegisterRequest) (*domain.User, error) {

@@ -17,6 +17,7 @@ import (
 	"github.com/tommynurwantoro/golog"
 )
 
+//go:generate mockgen -source=token_service.go -destination=mocks/token_service.go -package=mocks
 type TokenService interface {
 	DeleteToken(ctx context.Context, tokenType domain.TokenType, userID string) error
 	DeleteAllToken(ctx context.Context, userID string) error
