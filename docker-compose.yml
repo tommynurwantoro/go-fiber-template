@@ -11,15 +11,15 @@ services:
     image: postgres:alpine
     restart: always
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USER}"]
       timeout: 20s
       retries: 10
     ports:
-      - ${DB_PORT}:5432
+      - ${DATABASE_PORT}:5432
     environment:
-      - POSTGRES_USER=${DB_USER}
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
-      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DATABASE_USER}
+      - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
+      - POSTGRES_DB=${DATABASE_NAME}
     volumes:
       - dbdata:/var/lib/postgresql/data
       - ./internal/adapter/database/init:/docker-entrypoint-initdb.d

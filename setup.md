@@ -63,17 +63,17 @@ Update the following values:
 - `APP_NAME=<app-display-name>`
 - `DATABASE_NAME=<database-name>`
 
-The `docker-compose.yml` file also requires `DB_NAME`, `DB_USER`, `DB_PASSWORD`, and `DB_PORT` variables. If these do not exist in `.env.example`, add them in a separate "docker-compose configuration" section:
+The `docker-compose.yml` file also requires `DATABASE_NAME`, `DATABASE_USER`, `DATABASE_PASSWORD`, and `DATABASE_PORT` variables. If these do not exist in `.env.example`, add them in a separate "docker-compose configuration" section:
 
 ```
 # docker-compose configuration
-DB_USER=postgres
-DB_PASSWORD=changemeinproduction
-DB_NAME=<database-name>
-DB_PORT=5432
+DATABASE_USER=postgres
+DATABASE_PASSWORD=changemeinproduction
+DATABASE_NAME=<database-name>
+DATABASE_PORT=5432
 ```
 
-If `DB_NAME` already exists, update it to `<database-name>`.
+If `DATABASE_NAME` already exists, update it to `<database-name>`.
 
 ### e. `main.go`
 

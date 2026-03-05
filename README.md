@@ -231,15 +231,10 @@ ENVIRONMENT=development
 
 # database configuration
 DATABASE_HOST=postgresdb
+DATABASE_PORT=5432
 DATABASE_NAME=fiberdb
 DATABASE_USER=postgres
 DATABASE_PASSWORD=changemeinproduction
-
-# for docker-compose
-DB_USER=postgres
-DB_PASSWORD=changemeinproduction
-DB_NAME=fiberdb
-DB_PORT=5432
 
 # JWT
 JWT_SECRET=changemeinproduction
