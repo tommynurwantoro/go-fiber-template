@@ -2,21 +2,19 @@ package service
 
 import (
 	"app/config"
-	"app/internal/adapter/database"
+	"app/internal/adapter/database/repository"
 	"app/internal/application/model"
 	"app/internal/domain"
 	"app/internal/domain/myerrors"
 	"app/internal/pkg/crypto"
 	"app/internal/pkg/token"
 	"app/internal/pkg/validator"
-	"errors"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/tommynurwantoro/golog"
-	"gorm.io/gorm"
 )
 
 type TokenService interface {
@@ -30,38 +28,18 @@ type TokenService interface {
 }
 
 type TokenServiceImpl struct {
-	Conf        *config.Config           `inject:"config"`
-	DB          database.DatabaseAdapter `inject:"database"`
-	UserService UserService              `inject:"userService"`
-	Validator   validator.Validator      `inject:"validator"`
+	Conf            *config.Config             `inject:"config"`
+	TokenRepository repository.TokenRepository `inject:"tokenRepository"`
+	UserService     UserService                `inject:"userService"`
+	Validator       validator.Validator        `inject:"validator"`
 }
 
 func (s *TokenServiceImpl) DeleteToken(c *fiber.Ctx, tokenType domain.TokenType, userID string) error {
-	tokenDoc := new(domain.Token)
-
-	result := s.DB.GetDB().WithContext(c.Context()).
-		Where("type = ? AND user_id = ?", tokenType.String(), userID).
-		Delete(tokenDoc)
-
-	if result.Error != nil {
-		golog.Error("Error deleting token", result.Error)
-		return myerrors.ErrDeleteTokenFailed
-	}
-
-	return nil
+	return s.TokenRepository.Delete(c.Context(), tokenType, userID)
 }
 
 func (s *TokenServiceImpl) DeleteAllToken(c *fiber.Ctx, userID string) error {
-	tokenDoc := new(domain.Token)
-
-	result := s.DB.GetDB().WithContext(c.Context()).Where("user_id = ?", userID).Delete(tokenDoc)
-
-	if result.Error != nil {
-		golog.Error("Error deleting all token", result.Error)
-		return myerrors.ErrDeleteAllTokenFailed
-	}
-
-	return nil
+	return s.TokenRepository.DeleteAll(c.Context(), userID)
 }
 
 func (s *TokenServiceImpl) GetTokenByRefreshToken(c *fiber.Ctx, refreshToken string) (*domain.Token, error) {
@@ -70,18 +48,9 @@ func (s *TokenServiceImpl) GetTokenByRefreshToken(c *fiber.Ctx, refreshToken str
 		return nil, err
 	}
 
-	tokenDoc := new(domain.Token)
-
-	result := s.DB.GetDB().WithContext(c.Context()).
-		Where("token = ? AND user_id = ?", refreshToken, userID).
-		First(tokenDoc)
-
-	if result.Error != nil {
-		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			return nil, myerrors.ErrTokenNotFound
-		}
-		golog.Error("Error getting token by refresh token", result.Error)
-		return nil, myerrors.ErrGetTokenByUserIDFailed
+	tokenDoc, err := s.TokenRepository.GetByTokenAndUserID(c.Context(), refreshToken, userID)
+	if err != nil {
+		return nil, err
 	}
 
 	return tokenDoc, nil
@@ -200,7 +169,7 @@ func (s *TokenServiceImpl) generateToken(userID string, expires time.Time, token
 func (s *TokenServiceImpl) saveToken(
 	c *fiber.Ctx, token, userID string, tokenType domain.TokenType, expires time.Time,
 ) (*domain.Token, error) {
-	if err := s.DeleteToken(c, tokenType, userID); err != nil {
+	if err := s.TokenRepository.Delete(c.Context(), tokenType, userID); err != nil {
 		golog.Error("Error deleting token", err)
 		return nil, myerrors.ErrDeleteTokenFailed
 	}
@@ -212,12 +181,10 @@ func (s *TokenServiceImpl) saveToken(
 		Expires: expires,
 	}
 
-	result := s.DB.GetDB().WithContext(c.Context()).Create(tokenDoc)
-
-	if result.Error != nil {
-		golog.Error("Error saving token", result.Error)
-		return nil, myerrors.ErrSaveTokenFailed
+	savedToken, err := s.TokenRepository.Create(c.Context(), tokenDoc)
+	if err != nil {
+		return nil, err
 	}
 
-	return tokenDoc, nil
+	return savedToken, nil
 }

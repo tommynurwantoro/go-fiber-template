@@ -17,4 +17,5 @@ func RegisterAdapters() {
 
 func RegisterRepositories() {
 	appContainer.RegisterService("userRepository", new(repository.UserRepositoryImpl))
+	appContainer.RegisterService("tokenRepository", new(repository.TokenRepositoryImpl))
 }
