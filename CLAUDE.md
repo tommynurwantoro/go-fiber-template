@@ -2,6 +2,59 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## 📚 Knowledge Source: GitHub Wiki
+
+> **For AI Agents:** This project has a comprehensive [GitHub Wiki](https://github.com/tommynurwantoro/go-fiber-template/wiki) with detailed documentation for all development tasks.
+
+### Available Wiki Documentation
+
+The wiki contains **21 pages** covering all aspects of development:
+
+**For Template Users:**
+- [Quick Start](https://github.com/tommynurwantoro/go-fiber-template/wiki/Quick-Start) - Get started in 10 minutes
+- [Configuration Guide](https://github.com/tommynurwantoro/go-fiber-template/wiki/Configuration-Guide) - Environment setup
+- [Adding New Features](https://github.com/tommynurwantoro/go-fiber-template/wiki/How-To-Adding-New-Features) - Complete CRUD tutorial
+- [Setting Up Authentication](https://github.com/tommynurwantoro/go-fiber-template/wiki/How-To-Setting-Up-Authentication) - JWT & OAuth2
+- [Database Migrations](https://github.com tommynurwantoro/go-fiber-template/wiki/How-To-Database-Migrations) - Migration management
+- [OAuth2 Integration](https://github.com/tommynurwantoro/go-fiber-template/wiki/How-To-OAuth2-Integration) - Google OAuth
+- [Email Configuration](https://github.com/tommynurwantoro/go-fiber-template/wiki/How-To-Email-Configuration) - SMTP setup
+- [Troubleshooting](https://github.com/tommynurwantoro/go-fiber-template/wiki/Troubleshooting) - Common issues & solutions
+
+**For Contributors:**
+- [Architecture Overview](https://github.com/tommynurwantoro/go-fiber-template/wiki/Contributor-Architecture-Overview) - Layered/hexagonal architecture
+- [Development Setup](https://github.com/tommynurwantoro/go-fiber-template/wiki/Contributor-Development-Setup) - Dev environment
+- [Testing Strategy](https://github.com/tommynurwantoro/go-fiber-template/wiki/Contributor-Testing-Strategy) - Testing approach
+- [Code Review Guidelines](https://github.com/tommynurwantoro/go-fiber-template/wiki/Contributor-Code-Review-Guidelines) - Review standards
+- [Pull Request Workflow](https://github.com/tommynurwantoro/go-fiber-template/wiki/Contributor-Pull-Request-Workflow) - PR process
+- [Mock Generation](https://github.com/tommynurwantoro/go-fiber-template/wiki/Contributor-Mock-Generation) - Mock patterns
+
+**Reference:**
+- [API Endpoints](https://github.com/tommynurwantoro/go-fiber-template/wiki/Ref-API-Endpoints) - Complete API reference
+- [Configuration Options](https://github.com/tommynurwantoro/go-fiber-template/wiki/Ref-Configuration-Options) - All config options
+- [Error Codes](https://github.com/tommynurwantoro/go-fiber-template/wiki/Ref-Error-Codes) - Error handling
+- [Glossary](https://github.com/tommynurwantoro/go-fiber-template/wiki/Ref-Glossary) - Terminology
+
+### How AI Agents Should Use the Wiki
+
+When assisting with this project:
+
+1. **Before starting any task** - Check the wiki for relevant guides
+2. **For feature development** - Read "Adding New Features" tutorial
+3. **For architecture questions** - Read "Architecture Overview"
+4. **For testing** - Read "Testing Strategy" and "Mock Generation"
+5. **For configuration issues** - Check "Configuration Guide" and "Troubleshooting"
+6. **For PRs** - Follow "Code Review Guidelines" and "Pull Request Workflow"
+
+### Accessing the Wiki
+
+> **IMPORTANT:** The wiki is **only available on GitHub** at: https://github.com/tommynurwantoro/go-fiber-template/wiki
+>
+> The wiki is **NOT included** in this repository. Always reference the GitHub Wiki URL when accessing documentation.
+
+To update the wiki (for maintainers only), copy the flattened files from local development to the separate wiki repository and push.
+
+---
+
 ## Commands
 
 ```bash

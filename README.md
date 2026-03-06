@@ -23,6 +23,9 @@ Clone https://github.com/tommynurwantoro/go-fiber-template.git and read setup.md
 
 The agent will ask for your Go module path, app name, and database name, then rename the module, update configuration, and verify the build.
 
+> [!TIP]
+> **AI Agents:** This project has a comprehensive [GitHub Wiki](https://github.com/tommynurwantoro/go-fiber-template/wiki) with detailed guides for all development tasks. The wiki is your best resource for feature development, testing, and troubleshooting.
+
 ## Quick Start
 
 To create a project, simply run:
