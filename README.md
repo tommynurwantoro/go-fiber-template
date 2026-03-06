@@ -15,21 +15,13 @@ The app comes with many built-in features, such as authentication using JWT and 
 
 ## Quick Start with AI Agent
 
-Use any AI coding agent to initialize this template automatically:
+Use any AI coding agent (Claude Code, Cursor, Copilot, Windsurf, etc.) to initialize this template automatically. Give it this prompt:
 
-1. Clone the repo:
-   ```bash
-   git clone --depth 1 https://github.com/tommynurwantoro/go-fiber-template.git
-   cd go-fiber-template
-   ```
-2. Open the project in your AI coding tool (Claude Code, Cursor, Copilot, Windsurf, etc.)
-3. Give it this prompt:
-   ```
-   Read setup.md and initialize this project
-   ```
-   The agent will ask for your Go module path, app name, and database name.
+```
+Clone https://github.com/tommynurwantoro/go-fiber-template.git and read setup.md to initialize the project
+```
 
-The AI agent will rename the module, update configuration, and verify the build.
+The agent will ask for your Go module path, app name, and database name, then rename the module, update configuration, and verify the build.
 
 ## Quick Start
 
