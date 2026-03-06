@@ -16,7 +16,11 @@ type UserRepositoryImpl struct {
 	DB database.DatabaseAdapter `inject:"database"`
 }
 
-func (r *UserRepositoryImpl) GetAll(ctx context.Context, limit, offset int, search string) ([]domain.User, int64, error) {
+func (r *UserRepositoryImpl) GetAll(
+	ctx context.Context,
+	limit, offset int,
+	search string,
+) ([]domain.User, int64, error) {
 	var users []domain.User
 	var totalResults int64
 

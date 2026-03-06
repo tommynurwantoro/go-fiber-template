@@ -123,7 +123,11 @@ func (u *UserServiceImpl) UpdateUser(ctx context.Context, req *model.UpdateUserR
 	return updatedUser, nil
 }
 
-func (u *UserServiceImpl) UpdatePassOrVerify(ctx context.Context, req *model.UpdatePassOrVerifyRequest, id string) error {
+func (u *UserServiceImpl) UpdatePassOrVerify(
+	ctx context.Context,
+	req *model.UpdatePassOrVerifyRequest,
+	id string,
+) error {
 	if err := u.Validator.Validate(ctx, req); err != nil {
 		golog.Error("Error validating update pass or verify request", err)
 		return myerrors.ErrInvalidRequest
@@ -164,7 +168,10 @@ func (u *UserServiceImpl) DeleteUser(ctx context.Context, id string) error {
 	return nil
 }
 
-func (u *UserServiceImpl) CreateGoogleUser(ctx context.Context, req *model.CreateGoogleUserRequest) (*domain.User, error) {
+func (u *UserServiceImpl) CreateGoogleUser(
+	ctx context.Context,
+	req *model.CreateGoogleUserRequest,
+) (*domain.User, error) {
 	if err := u.Validator.Validate(ctx, req); err != nil {
 		golog.Error("Error validating create google user request", err)
 		return nil, myerrors.ErrInvalidRequest
@@ -173,13 +180,13 @@ func (u *UserServiceImpl) CreateGoogleUser(ctx context.Context, req *model.Creat
 	userFromDB, err := u.UserRepository.GetByEmail(ctx, req.Email)
 	if err != nil {
 		if errors.Is(err, myerrors.ErrUserNotFound) {
-			newUser, err := u.UserRepository.Create(ctx, &domain.User{
+			newUser, createErr := u.UserRepository.Create(ctx, &domain.User{
 				Name:          req.Name,
 				Email:         req.Email,
 				VerifiedEmail: req.VerifiedEmail,
 			})
-			if err != nil {
-				return nil, err
+			if createErr != nil {
+				return nil, createErr
 			}
 
 			return newUser, nil

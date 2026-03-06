@@ -57,7 +57,10 @@ func (s *TokenServiceImpl) GetTokenByRefreshToken(ctx context.Context, refreshTo
 	return tokenDoc, nil
 }
 
-func (s *TokenServiceImpl) GenerateAuthTokens(ctx context.Context, userID string) (*domain.Token, *domain.Token, error) {
+func (s *TokenServiceImpl) GenerateAuthTokens(
+	ctx context.Context,
+	userID string,
+) (*domain.Token, *domain.Token, error) {
 	accessTokenExpires := time.Now().UTC().Add(s.Conf.JWT.Expire)
 	accessToken, err := s.generateToken(userID, accessTokenExpires, domain.TokenTypeAccess)
 	if err != nil {
