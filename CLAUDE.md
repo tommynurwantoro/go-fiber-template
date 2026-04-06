@@ -15,7 +15,7 @@ The wiki contains **21 pages** covering all aspects of development:
 - [Configuration Guide](https://github.com/tommynurwantoro/go-fiber-template/wiki/Configuration-Guide) - Environment setup
 - [Adding New Features](https://github.com/tommynurwantoro/go-fiber-template/wiki/How-To-Adding-New-Features) - Complete CRUD tutorial
 - [Setting Up Authentication](https://github.com/tommynurwantoro/go-fiber-template/wiki/How-To-Setting-Up-Authentication) - JWT & OAuth2
-- [Database Migrations](https://github.com tommynurwantoro/go-fiber-template/wiki/How-To-Database-Migrations) - Migration management
+- [Database Migrations](https://github.com/tommynurwantoro/go-fiber-template/wiki/How-To-Database-Migrations) - Migration management
 - [OAuth2 Integration](https://github.com/tommynurwantoro/go-fiber-template/wiki/How-To-OAuth2-Integration) - Google OAuth
 - [Email Configuration](https://github.com/tommynurwantoro/go-fiber-template/wiki/How-To-Email-Configuration) - SMTP setup
 - [Troubleshooting](https://github.com/tommynurwantoro/go-fiber-template/wiki/Troubleshooting) - Common issues & solutions
@@ -63,7 +63,7 @@ make start          # Run the application
 air                 # Run with live reload (requires Air installed)
 
 # Build
-make build          # Build binary to ./bin/go-fiber-template
+make build          # go generate ./... then build binary to ./bin/go-fiber-template
 
 # Testing
 make tests          # Run all tests
@@ -119,7 +119,7 @@ internal/
   pkg/                  # Shared packages
     crypto/             # Password hashing
     formatter/          # Response formatting
-    middleware/         # Auth middleware (JWT)
+    middleware/         # JWT auth, logging, rate limit, recover, helpers
     token/              # Token utilities
     validator/          # Request validation
 config/                 # Config models, roles, token types
@@ -154,6 +154,8 @@ var ErrUserNotFound = errors.New("user not found")
 ```
 
 **Validation**: Request DTOs use go-playground/validator tags. Custom validators in `internal/pkg/validator/custom_validator.go`.
+
+**Fiber global middleware**: Registered in `internal/adapter/rest/fiber.go` (order matters): request ID (`traceId` context key), rate limiter on `/v1/auth`, helmet, compress, CORS, panic recover, and structured request logging via `middleware.Log` (uses the same `CodeMap` / `StatusMap` as the REST error handler). `X-Correlation-ID` overrides the trace ID when present.
 
 ## Adding New Features
 

@@ -39,6 +39,7 @@ func (f *Fiber) Startup() error {
 	f.Use(compress.New())
 	f.Use(cors.New())
 	f.Use(middleware.RecoverConfig())
+	f.Use(middleware.Log(CodeMap, StatusMap))
 
 	return nil
 }
